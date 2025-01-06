@@ -1,0 +1,44 @@
+name: mermaid-converter
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    environment:
+      - VITE_API_BASE_URL=http://backend:8000
+    depends_on:
+      - backend
+    networks:
+      - mermaid-network
+
+  backend:
+    build:
+      context: ./backend-node
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - NODE_ENV=production
+      - PORT=8000
+    volumes:
+      - ./backend-node/logs:/app/logs
+      - ./backend-node/static:/app/static
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/formats"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - mermaid-network
+
+networks:
+  mermaid-network:
+    driver: bridge
+
+volumes:
+  logs:
+  static: 

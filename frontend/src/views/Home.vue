@@ -144,12 +144,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { ElMessage } from 'element-plus';
 import { Upload, Download, ZoomIn, ZoomOut } from '@element-plus/icons-vue';
 import { useMermaidStore } from '../stores/mermaid';
-import { useI18n } from 'vue-i18n';
 
-const { t } = useI18n();
 const store = useMermaidStore();
 const previewUrl = ref<string>('');
 const zoomLevel = ref(1);
@@ -215,14 +212,14 @@ const handleDownload = async () => {
 };
 
 // 处理 DPI 变更
-const handleDpiChange = async (value: number) => {
+const handleDpiChange = async () => {
   if (store.code) {
     await handleConvert();
   }
 };
 
 // 处理格式变更
-const handleFormatChange = async (value: string) => {
+const handleFormatChange = async () => {
   if (store.code) {
     await handleConvert();
   }
