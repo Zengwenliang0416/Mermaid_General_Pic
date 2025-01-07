@@ -72,21 +72,20 @@
                     <span>{{ t('preview.title') }}</span>
                   </div>
                   <div class="preview-controls">
-                    <el-button-group v-if="previewUrl">
-                      <el-tooltip :content="t('preview.zoom_out')" placement="top">
-                        <el-button @click="handleZoomOut" size="small">
-                          <el-icon><ZoomOut /></el-icon>
-                        </el-button>
-                      </el-tooltip>
-                      <el-button size="small" @click="handleResetZoom">
-                        {{ Math.round(zoomLevel * 100) }}%
-                      </el-button>
-                      <el-tooltip :content="t('preview.zoom_in')" placement="top">
-                        <el-button @click="handleZoomIn" size="small">
-                          <el-icon><ZoomIn /></el-icon>
-                        </el-button>
-                      </el-tooltip>
-                    </el-button-group>
+                    <div v-if="previewUrl">
+                      <el-input-number
+                        v-model="zoomPercent"
+                        :min="10"
+                        :max="300"
+                        :step="10"
+                        size="small"
+                        style="width: 110px"
+                        @change="handleZoomChange"
+                        controls-position="right"
+                      >
+                        <template #suffix>%</template>
+                      </el-input-number>
+                    </div>
                     <DownloadDialog
                       v-if="previewUrl"
                       :code="store.code"
@@ -145,8 +144,6 @@ import {
   Upload,
   Picture,
   View,
-  ZoomIn,
-  ZoomOut,
   Loading,
   PictureFilled,
   Refresh
@@ -162,6 +159,7 @@ const zoomLevel = ref(1);
 const ZOOM_STEP = 0.1;
 const MAX_ZOOM = 3;
 const MIN_ZOOM = 0.1;
+const zoomPercent = ref(100);
 
 // 初始化
 onMounted(async () => {
@@ -271,20 +269,9 @@ const handleBackgroundChange = async () => {
   }
 };
 
-const handleZoomIn = () => {
-  if (zoomLevel.value < MAX_ZOOM) {
-    zoomLevel.value = Math.min(MAX_ZOOM, zoomLevel.value + ZOOM_STEP);
-  }
-};
-
-const handleZoomOut = () => {
-  if (zoomLevel.value > MIN_ZOOM) {
-    zoomLevel.value = Math.max(MIN_ZOOM, zoomLevel.value - ZOOM_STEP);
-  }
-};
-
-const handleResetZoom = () => {
-  zoomLevel.value = 1;
+// 修改缩放相关的处理函数
+const handleZoomChange = (value: number) => {
+  zoomLevel.value = value / 100;
 };
 </script>
 
