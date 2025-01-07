@@ -16,7 +16,7 @@ export const useMermaidStore = defineStore('mermaid', () => {
   const format = ref('png');
   const dpi = ref(300);
   const theme = ref('default');
-  const background = ref('transparent');
+  const background = ref('white');
   const history = ref<ConversionHistory[]>([]);
   const isLoading = ref(false);
   const error = ref<string | null>(null);
@@ -58,20 +58,20 @@ export const useMermaidStore = defineStore('mermaid', () => {
       const validDpi = Math.min(Math.max(dpi.value, dpiRange.value.min), dpiRange.value.max);
       const blob = await api.convert(
         code.value, 
-        format.value, 
+        'png',
         validDpi,
-        theme.value,
-        background.value
+        'default',
+        'white'
       );
       
       const url = URL.createObjectURL(blob);
       
       history.value.unshift({
         code: code.value,
-        format: format.value,
+        format: 'png',
         dpi: validDpi,
-        theme: theme.value,
-        background: background.value,
+        theme: 'default',
+        background: 'white',
         timestamp: Date.now()
       });
 
@@ -94,10 +94,10 @@ export const useMermaidStore = defineStore('mermaid', () => {
       const validDpi = Math.min(Math.max(dpi.value, dpiRange.value.min), dpiRange.value.max);
       const blob = await api.upload(
         file, 
-        format.value, 
+        'png',
         validDpi,
-        theme.value,
-        background.value
+        'default',
+        'white'
       );
       
       const url = URL.createObjectURL(blob);
@@ -110,10 +110,10 @@ export const useMermaidStore = defineStore('mermaid', () => {
 
       history.value.unshift({
         code: code.value,
-        format: format.value,
+        format: 'png',
         dpi: validDpi,
-        theme: theme.value,
-        background: background.value,
+        theme: 'default',
+        background: 'white',
         timestamp: Date.now()
       });
 
@@ -134,10 +134,10 @@ export const useMermaidStore = defineStore('mermaid', () => {
   // 从历史记录中加载
   function loadFromHistory(item: ConversionHistory) {
     code.value = item.code;
-    format.value = item.format;
+    format.value = 'png';
     dpi.value = item.dpi;
-    theme.value = item.theme;
-    background.value = item.background;
+    theme.value = 'default';
+    background.value = 'white';
   }
 
   return {

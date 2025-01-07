@@ -2,15 +2,20 @@
   <div class="history">
     <el-container>
       <el-main>
-        <el-card>
+        <el-card class="history-card">
           <template #header>
             <div class="card-header">
-              <span>{{ t('history.title') }}</span>
+              <div class="header-title">
+                <el-icon><Timer /></el-icon>
+                <span>{{ t('history.title') }}</span>
+              </div>
               <el-button
                 type="danger"
                 :disabled="!store.history.length"
                 @click="handleClear"
+                size="small"
               >
+                <el-icon><Delete /></el-icon>
                 {{ t('common.clear') }}
               </el-button>
             </div>
@@ -26,48 +31,81 @@
               v-for="item in store.history"
               :key="item.timestamp"
               :timestamp="formatDate(item.timestamp)"
+              :type="getTimelineType(item)"
+              :hollow="true"
+              size="large"
             >
-              <el-card class="history-item">
+              <el-card class="history-item" shadow="hover">
                 <div class="history-content">
                   <div class="code-preview">
                     <div class="code-header">
+                      <el-icon><Document /></el-icon>
                       <span>{{ t('history.code') }}</span>
                     </div>
                     <pre>{{ item.code }}</pre>
                   </div>
                   <div class="image-preview">
                     <div class="preview-header">
+                      <el-icon><Picture /></el-icon>
                       <span>{{ t('preview.title') }}</span>
                     </div>
                     <el-image
                       :src="`http://localhost:8000${item.url}`"
                       fit="contain"
                       class="preview-image"
-                    />
+                      :preview-src-list="[`http://localhost:8000${item.url}`]"
+                      hide-on-click-modal
+                    >
+                      <template #placeholder>
+                        <div class="image-placeholder">
+                          <el-icon><Loading /></el-icon>
+                        </div>
+                      </template>
+                      <template #error>
+                        <div class="image-error">
+                          <el-icon><PictureFilled /></el-icon>
+                          <span>{{ t('preview.error') }}</span>
+                        </div>
+                      </template>
+                    </el-image>
                   </div>
                 </div>
                 <div class="history-footer">
                   <div class="history-info">
-                    <el-tag size="small">{{ item.format.toUpperCase() }}</el-tag>
-                    <el-tag size="small" type="info">{{ item.dpi }} DPI</el-tag>
-                    <el-tag size="small" type="success">{{ t(`theme.${item.theme}`) }}</el-tag>
-                    <el-tag size="small" type="warning">{{ t(`background.${item.background}`) }}</el-tag>
+                    <el-tooltip :content="t('editor.format')" placement="top">
+                      <el-tag size="small" effect="plain">{{ item.format.toUpperCase() }}</el-tag>
+                    </el-tooltip>
+                    <el-tooltip :content="t('editor.dpi')" placement="top">
+                      <el-tag size="small" type="info" effect="plain">{{ item.dpi }} DPI</el-tag>
+                    </el-tooltip>
+                    <el-tooltip :content="t('editor.theme')" placement="top">
+                      <el-tag size="small" type="success" effect="plain">{{ t(`theme.${item.theme}`) }}</el-tag>
+                    </el-tooltip>
+                    <el-tooltip :content="t('editor.background')" placement="top">
+                      <el-tag size="small" type="warning" effect="plain">{{ t(`background.${item.background}`) }}</el-tag>
+                    </el-tooltip>
                   </div>
                   <div class="history-actions">
-                    <el-button
-                      type="primary"
-                      link
-                      @click="handleLoad(item)"
-                    >
-                      {{ t('common.load') }}
-                    </el-button>
-                    <el-button
-                      type="primary"
-                      link
-                      @click="handleDownload(item)"
-                    >
-                      {{ t('common.download') }}
-                    </el-button>
+                    <el-tooltip :content="t('history.load_tooltip')" placement="top">
+                      <el-button
+                        type="primary"
+                        link
+                        @click="handleLoad(item)"
+                      >
+                        <el-icon><RefreshRight /></el-icon>
+                        {{ t('common.load') }}
+                      </el-button>
+                    </el-tooltip>
+                    <el-tooltip :content="t('history.download_tooltip')" placement="top">
+                      <el-button
+                        type="primary"
+                        link
+                        @click="handleDownload(item)"
+                      >
+                        <el-icon><Download /></el-icon>
+                        {{ t('common.download') }}
+                      </el-button>
+                    </el-tooltip>
                   </div>
                 </div>
               </el-card>
@@ -84,6 +122,16 @@ import { useRouter } from 'vue-router';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { useMermaidStore, type ConversionHistory } from '../stores/mermaid';
 import { useI18n } from 'vue-i18n';
+import {
+  Timer,
+  Delete,
+  Document,
+  Picture,
+  Loading,
+  PictureFilled,
+  Download,
+  RefreshRight
+} from '@element-plus/icons-vue';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -91,7 +139,32 @@ const store = useMermaidStore();
 
 // 格式化日期
 const formatDate = (timestamp: number) => {
-  return new Date(timestamp).toLocaleString();
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const oneDay = 24 * 60 * 60 * 1000;
+
+  if (diff < oneDay) {
+    return t('history.today', { time: date.toLocaleTimeString() });
+  } else if (diff < 2 * oneDay) {
+    return t('history.yesterday', { time: date.toLocaleTimeString() });
+  } else {
+    return date.toLocaleString();
+  }
+};
+
+// 获取时间轴节点类型
+const getTimelineType = (item: ConversionHistory) => {
+  switch (item.format) {
+    case 'png':
+      return 'primary';
+    case 'svg':
+      return 'success';
+    case 'jpg':
+      return 'warning';
+    default:
+      return 'info';
+  }
 };
 
 // 处理清除历史记录
@@ -143,6 +216,13 @@ const handleDownload = async (item: ConversionHistory) => {
 <style scoped>
 .history {
   padding: 20px;
+  background-color: var(--el-bg-color-page);
+  min-height: 100vh;
+}
+
+.history-card {
+  border-radius: 8px;
+  box-shadow: var(--el-box-shadow-light);
 }
 
 .card-header {
@@ -151,8 +231,18 @@ const handleDownload = async (item: ConversionHistory) => {
   align-items: center;
 }
 
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
 .history-item {
   margin-bottom: 20px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
 }
 
 .history-content {
@@ -166,68 +256,131 @@ const handleDownload = async (item: ConversionHistory) => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: #f5f7fa;
-  border-radius: 4px;
+  background-color: var(--el-bg-color);
+  border: 1px solid var(--el-border-color-light);
+  border-radius: 8px;
   overflow: hidden;
 }
 
 .code-header,
 .preview-header {
   padding: 8px 12px;
-  background-color: #e4e7ed;
+  background-color: var(--el-bg-color-page);
   font-weight: 500;
   font-size: 14px;
+  border-bottom: 1px solid var(--el-border-color-light);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .code-preview pre {
   margin: 0;
-  padding: 10px;
+  padding: 12px;
   white-space: pre-wrap;
   word-wrap: break-word;
-  font-family: monospace;
-  font-size: 12px;
+  font-family: 'Fira Code', monospace;
+  font-size: 13px;
+  line-height: 1.5;
   overflow: auto;
   max-height: 180px;
+  color: var(--el-text-color-primary);
 }
 
 .image-preview .el-image {
-  padding: 10px;
+  padding: 12px;
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: var(--el-bg-color);
 }
 
 .preview-image {
   max-width: 100%;
   max-height: 180px;
+  transition: transform 0.3s ease;
+}
+
+.preview-image:hover {
+  transform: scale(1.02);
+}
+
+.image-placeholder,
+.image-error {
+  height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  color: var(--el-text-color-secondary);
+  font-size: 14px;
 }
 
 .history-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 10px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--el-border-color-lighter);
 }
 
 .history-info {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 .history-actions {
   display: flex;
-  gap: 10px;
+  gap: 16px;
+}
+
+:deep(.el-timeline) {
+  padding: 16px;
 }
 
 :deep(.el-timeline-item__node) {
-  background-color: #409eff;
+  background-color: var(--el-color-primary);
 }
 
 :deep(.el-timeline-item__tail) {
-  border-left-color: #e4e7ed;
+  border-left-color: var(--el-border-color);
 }
 
 :deep(.el-timeline-item__timestamp) {
-  color: #606266;
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
+}
+
+:deep(.el-button--small) {
+  padding: 8px 16px;
+}
+
+:deep(.el-tag) {
+  border-radius: 4px;
+}
+
+@media (max-width: 768px) {
+  .history-content {
+    flex-direction: column;
+  }
+
+  .code-preview,
+  .image-preview {
+    width: 100%;
+  }
+
+  .history-footer {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .history-info,
+  .history-actions {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
 }
 </style> 

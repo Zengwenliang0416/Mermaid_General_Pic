@@ -15,7 +15,8 @@
     "theme": "主题",
     "background": "背景",
     "format": "格式",
-    "dpi": "DPI"
+    "dpi": "DPI",
+    "dpi_tooltip": "图片分辨率 (DPI)"
   },
   "download": {
     "title": "下载设置",
@@ -34,7 +35,11 @@
   "preview": {
     "title": "预览",
     "empty": "暂无预览",
-    "download": "下载"
+    "download": "下载",
+    "error": "图片加载失败",
+    "loading": "正在加载图片...",
+    "zoom_in": "放大",
+    "zoom_out": "缩小"
   },
   "history": {
     "title": "转换历史",
@@ -47,7 +52,11 @@
     "load_error": "加载代码失败",
     "time": "时间",
     "code": "代码",
-    "actions": "操作"
+    "actions": "操作",
+    "today": "今天 {time}",
+    "yesterday": "昨天 {time}",
+    "load_tooltip": "加载此代码到编辑器",
+    "download_tooltip": "下载此图片"
   },
   "theme": {
     "default": "默认",

@@ -15,7 +15,8 @@
     "theme": "Theme",
     "background": "Background",
     "format": "Format",
-    "dpi": "DPI"
+    "dpi": "DPI",
+    "dpi_tooltip": "Image resolution (DPI)"
   },
   "download": {
     "title": "Download Settings",
@@ -34,7 +35,11 @@
   "preview": {
     "title": "Preview",
     "empty": "No preview available",
-    "download": "Download"
+    "download": "Download",
+    "error": "Failed to load image",
+    "loading": "Loading image...",
+    "zoom_in": "Zoom in",
+    "zoom_out": "Zoom out"
   },
   "history": {
     "title": "Conversion History",
@@ -47,7 +52,11 @@
     "load_error": "Failed to load code",
     "time": "Time",
     "code": "Code",
-    "actions": "Actions"
+    "actions": "Actions",
+    "today": "Today at {time}",
+    "yesterday": "Yesterday at {time}",
+    "load_tooltip": "Load this code into editor",
+    "download_tooltip": "Download this image"
   },
   "theme": {
     "default": "Default",

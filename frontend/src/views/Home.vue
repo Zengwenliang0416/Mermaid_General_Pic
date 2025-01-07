@@ -5,83 +5,53 @@
         <el-row :gutter="20">
           <!-- 左侧编辑器 -->
           <el-col :span="12">
-            <el-card>
+            <el-card class="editor-card" shadow="hover">
               <template #header>
                 <div class="card-header">
-                  <span>{{ t('editor.title') }}</span>
+                  <div class="header-title">
+                    <el-icon><Edit /></el-icon>
+                    <span>{{ t('editor.title') }}</span>
+                  </div>
                   <el-upload
                     class="upload-btn"
                     :show-file-list="false"
                     accept=".txt,.mmd"
                     :before-upload="handleUpload"
                   >
-                    <el-button type="primary">
+                    <el-button type="primary" size="small">
                       <el-icon><Upload /></el-icon>
                       {{ t('editor.upload') }}
                     </el-button>
                   </el-upload>
                 </div>
               </template>
-              <el-input
-                v-model="store.code"
-                type="textarea"
-                :rows="15"
-                :placeholder="t('editor.placeholder')"
-                @input="handleCodeChange"
-              />
-              <div class="settings">
-                <el-select 
-                  v-model="store.format" 
-                  class="format-select"
-                  @change="handleFormatChange"
-                >
-                  <el-option
-                    v-for="format in store.supportedFormats"
-                    :key="format"
-                    :label="format.toUpperCase()"
-                    :value="format"
+              
+              <div class="editor-container">
+                <div class="editor-main">
+                  <el-input
+                    v-model="store.code"
+                    type="textarea"
+                    :rows="25"
+                    :placeholder="t('editor.placeholder')"
+                    @input="handleCodeChange"
+                    resize="none"
+                    spellcheck="false"
                   />
-                </el-select>
-                <el-select 
-                  v-model="store.theme" 
-                  class="theme-select"
-                  @change="handleThemeChange"
-                >
-                  <el-option
-                    v-for="theme in store.supportedThemes"
-                    :key="theme"
-                    :label="t(`theme.${theme}`)"
-                    :value="theme"
-                  />
-                </el-select>
-                <el-select 
-                  v-model="store.background" 
-                  class="background-select"
-                  @change="handleBackgroundChange"
-                >
-                  <el-option
-                    v-for="bg in store.supportedBackgrounds"
-                    :key="bg"
-                    :label="t(`background.${bg}`)"
-                    :value="bg"
-                  />
-                </el-select>
-                <el-input-number
-                  v-model="store.dpi"
-                  :min="store.dpiRange.min"
-                  :max="store.dpiRange.max"
-                  :step="100"
-                  class="dpi-input"
-                  @change="handleDpiChange"
-                />
-                <el-button
-                  type="primary"
-                  :loading="store.isLoading"
-                  @click="handleConvert"
-                >
-                  {{ t('editor.convert') }}
-                </el-button>
+                </div>
+
+                <div class="editor-footer">
+                  <el-button
+                    type="primary"
+                    :loading="store.isLoading"
+                    @click="handleConvert"
+                    size="small"
+                  >
+                    <el-icon><Refresh /></el-icon>
+                    {{ t('editor.convert') }}
+                  </el-button>
+                </div>
               </div>
+
               <el-alert
                 v-if="store.error"
                 :title="store.error"
@@ -94,21 +64,28 @@
 
           <!-- 右侧预览 -->
           <el-col :span="12">
-            <el-card>
+            <el-card class="preview-card" shadow="hover">
               <template #header>
                 <div class="card-header">
-                  <span>{{ t('preview.title') }}</span>
+                  <div class="header-title">
+                    <el-icon><View /></el-icon>
+                    <span>{{ t('preview.title') }}</span>
+                  </div>
                   <div class="preview-controls">
                     <el-button-group v-if="previewUrl">
-                      <el-button @click="handleZoomOut">
-                        <el-icon><ZoomOut /></el-icon>
-                      </el-button>
-                      <el-button @click="handleResetZoom">
+                      <el-tooltip :content="t('preview.zoom_out')" placement="top">
+                        <el-button @click="handleZoomOut" size="small">
+                          <el-icon><ZoomOut /></el-icon>
+                        </el-button>
+                      </el-tooltip>
+                      <el-button size="small" @click="handleResetZoom">
                         {{ Math.round(zoomLevel * 100) }}%
                       </el-button>
-                      <el-button @click="handleZoomIn">
-                        <el-icon><ZoomIn /></el-icon>
-                      </el-button>
+                      <el-tooltip :content="t('preview.zoom_in')" placement="top">
+                        <el-button @click="handleZoomIn" size="small">
+                          <el-icon><ZoomIn /></el-icon>
+                        </el-button>
+                      </el-tooltip>
                     </el-button-group>
                     <DownloadDialog
                       v-if="previewUrl"
@@ -124,9 +101,25 @@
                   fit="contain"
                   :style="{ transform: `scale(${zoomLevel})`, transformOrigin: 'top left' }"
                   class="preview-image"
-                />
+                  :preview-src-list="[previewUrl]"
+                  hide-on-click-modal
+                >
+                  <template #placeholder>
+                    <div class="image-placeholder">
+                      <el-icon><Loading /></el-icon>
+                      <span>{{ t('preview.loading') }}</span>
+                    </div>
+                  </template>
+                  <template #error>
+                    <div class="image-error">
+                      <el-icon><PictureFilled /></el-icon>
+                      <span>{{ t('preview.error') }}</span>
+                    </div>
+                  </template>
+                </el-image>
                 <div v-else class="empty-preview">
-                  {{ t('preview.empty') }}
+                  <el-icon><Picture /></el-icon>
+                  <span>{{ t('preview.empty') }}</span>
                 </div>
               </div>
             </el-card>
@@ -139,7 +132,17 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { Upload, Download, ZoomIn, ZoomOut } from '@element-plus/icons-vue';
+import {
+  Edit,
+  Upload,
+  Picture,
+  View,
+  ZoomIn,
+  ZoomOut,
+  Loading,
+  PictureFilled,
+  Refresh
+} from '@element-plus/icons-vue';
 import { useMermaidStore } from '../stores/mermaid';
 import DownloadDialog from '../components/DownloadDialog.vue';
 import { useI18n } from 'vue-i18n';
@@ -280,6 +283,15 @@ const handleResetZoom = () => {
 <style scoped>
 .home {
   padding: 20px;
+  background-color: var(--el-bg-color-page);
+  min-height: 100vh;
+}
+
+.editor-card,
+.preview-card {
+  height: 100%;
+  border-radius: 8px;
+  box-shadow: var(--el-box-shadow-light);
 }
 
 .card-header {
@@ -288,37 +300,60 @@ const handleResetZoom = () => {
   align-items: center;
 }
 
-.settings {
-  margin-top: 20px;
+.header-title {
   display: flex;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
 }
 
-.format-select,
-.theme-select,
-.background-select {
-  width: 120px;
+.editor-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.dpi-input {
-  width: 120px;
+.editor-main {
+  position: relative;
 }
 
-.error-alert {
-  margin-top: 20px;
+:deep(.el-textarea__inner) {
+  font-family: 'Fira Code', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: var(--el-bg-color);
+  border: 1px solid var(--el-border-color-light);
+  transition: all 0.3s ease;
+}
+
+:deep(.el-textarea__inner:hover) {
+  border-color: var(--el-border-color-hover);
+}
+
+:deep(.el-textarea__inner:focus) {
+  border-color: var(--el-color-primary);
+  box-shadow: 0 0 0 2px var(--el-color-primary-light-8);
+}
+
+.editor-footer {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .preview-container {
   height: 600px;
   overflow: auto;
-  background-color: #f5f7fa;
-  border-radius: 4px;
-  padding: 10px;
-  margin-top: 10px;
+  background-color: var(--el-bg-color);
+  border-radius: 8px;
+  border: 1px solid var(--el-border-color-light);
+  padding: 16px;
 }
 
 .preview-image {
-  transition: transform 0.2s ease;
+  transition: transform 0.3s ease;
 }
 
 :deep(.el-image) {
@@ -326,23 +361,22 @@ const handleResetZoom = () => {
   display: inline-block;
 }
 
-.empty-preview {
+.empty-preview,
+.image-placeholder,
+.image-error {
   height: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #909399;
+  gap: 12px;
+  color: var(--el-text-color-secondary);
   font-size: 14px;
-}
-
-:deep(.el-textarea__inner) {
-  font-family: monospace;
-  height: 600px;
 }
 
 .preview-controls {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
 }
 
@@ -353,5 +387,20 @@ const handleResetZoom = () => {
 
 :deep(.el-button-group .el-button) {
   padding: 8px 12px;
+}
+
+.error-alert {
+  margin-top: 16px;
+}
+
+@media (max-width: 768px) {
+  .el-row {
+    flex-direction: column;
+  }
+
+  .el-col {
+    width: 100% !important;
+    margin-bottom: 20px;
+  }
 }
 </style> 
