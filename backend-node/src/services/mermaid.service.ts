@@ -16,44 +16,51 @@ export class MermaidService {
     theme: typeof config.themes[number] = 'default',
     background: typeof config.backgrounds[number] = 'transparent'
   ): Promise<string> {
+    let tempFile: string | null = null;
+    let finalOutputFile: string | null = null;
+
     try {
       const fileId = uuidv4();
       const outputFile = path.join(config.imagesDir, `${fileId}.${outputFormat}`);
-      const tempFile = path.join(config.imagesDir, `${fileId}.mmd`);
+      tempFile = path.join(config.imagesDir, `${fileId}.mmd`);
 
       // 确保目录存在
+      logger.debug(`Creating directory: ${config.imagesDir}`);
       await fs.mkdir(config.imagesDir, { recursive: true });
 
       // 写入临时文件
+      logger.debug(`Writing temp file: ${tempFile}`);
       await fs.writeFile(tempFile, code);
-
-      // 构建命令
-      const cmd = [
-        'npx',
-        '@mermaid-js/mermaid-cli',
-        `-i "${tempFile}"`,
-        `-o "${outputFile}"`,
-        `-b ${background}`,
-        `-t ${theme}`,
-        `-w 1000`,
-        `-H 800`,
-        `-s ${dpi/72}`,
-      ];
 
       // 只支持 png 和 svg 格式
       const finalFormat = outputFormat === 'jpg' ? 'png' : outputFormat;
-      const finalOutputFile = path.join(config.imagesDir, `${fileId}.${finalFormat}`);
-      cmd[3] = `-o "${finalOutputFile}"`;
-      cmd.push(`-f ${finalFormat}`);
+      finalOutputFile = path.join(config.imagesDir, `${fileId}.${finalFormat}`);
 
-      // 执行命令
-      logger.debug(`Executing command: ${cmd.join(' ')}`);
-      const { stdout, stderr } = await execAsync(cmd.join(' '));
-      if (stderr && !stderr.includes('Store is a function')) {
-        logger.warn(`Command stderr: ${stderr}`);
+      // 构建命令
+      const scale = Math.max(1, Math.floor(dpi / 100)); // 将 DPI 转换为比例因子
+      const cmd = `npx @mermaid-js/mermaid-cli -i "${tempFile}" -o "${finalOutputFile}" -t ${theme} -b ${background} -s ${scale}`;
+      logger.debug(`Executing command: ${cmd}`);
+      
+      try {
+        const { stdout, stderr } = await execAsync(cmd);
+        if (stderr && !stderr.includes('Store is a function')) {
+          logger.warn(`Command stderr: ${stderr}`);
+        }
+        if (stdout) {
+          logger.debug(`Command stdout: ${stdout}`);
+        }
+      } catch (error) {
+        logger.error('Error executing mermaid-cli:', error);
+        throw error;
       }
-      if (stdout) {
-        logger.debug(`Command stdout: ${stdout}`);
+
+      // 检查文件是否生成
+      try {
+        await fs.access(finalOutputFile);
+        logger.debug(`File generated successfully: ${finalOutputFile}`);
+      } catch (error) {
+        logger.error(`File not generated: ${finalOutputFile}`);
+        throw new Error('Failed to generate diagram');
       }
 
       // 如果需要 jpg 格式，则使用 ImageMagick 转换
@@ -71,20 +78,51 @@ export class MermaidService {
             convertCmd = `convert "${finalOutputFile}" "${outputFile}"`;
           }
 
+          logger.debug(`Converting to JPG: ${convertCmd}`);
           await execAsync(convertCmd);
           await fs.unlink(finalOutputFile);
+          finalOutputFile = outputFile;
         } catch (error) {
           logger.error('Error converting to JPG:', error);
           // 如果转换失败，返回 PNG 文件
-          return `/images/${fileId}.${finalFormat}`;
+          return `/static/images/${fileId}.${finalFormat}`;
         }
       }
 
       // 清理临时文件
-      await fs.unlink(tempFile);
+      if (tempFile) {
+        try {
+          await fs.unlink(tempFile);
+          logger.debug(`Cleaned up temp file: ${tempFile}`);
+        } catch (error) {
+          logger.warn(`Failed to clean up temp file: ${tempFile}`, error);
+        }
+      }
 
-      return `/images/${fileId}.${outputFormat}`;
+      const relativePath = `/static/images/${fileId}.${outputFormat}`;
+      logger.debug(`Returning relative path: ${relativePath}`);
+      return relativePath;
     } catch (error) {
+      // 清理临时文件
+      if (tempFile) {
+        try {
+          await fs.unlink(tempFile);
+          logger.debug(`Cleaned up temp file: ${tempFile}`);
+        } catch (cleanupError) {
+          logger.warn(`Failed to clean up temp file: ${tempFile}`, cleanupError);
+        }
+      }
+
+      // 清理输出文件
+      if (finalOutputFile) {
+        try {
+          await fs.unlink(finalOutputFile);
+          logger.debug(`Cleaned up output file: ${finalOutputFile}`);
+        } catch (cleanupError) {
+          logger.warn(`Failed to clean up output file: ${finalOutputFile}`, cleanupError);
+        }
+      }
+
       logger.error('Error generating diagram:', error);
       throw error;
     }
@@ -103,6 +141,7 @@ export class MermaidService {
 
         if (age > ONE_DAY) {
           await fs.unlink(filePath);
+          logger.debug(`Cleaned up old file: ${filePath}`);
         }
       }
     } catch (error) {

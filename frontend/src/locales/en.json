@@ -1,0 +1,23 @@
+{
+  "common": {
+    "cancel": "Cancel",
+    "download": "Download",
+    "error": "Error",
+    "success": "Success"
+  },
+  "download": {
+    "title": "Download Settings",
+    "filename": "Filename",
+    "format": "Format",
+    "dpi": "DPI",
+    "theme": "Theme",
+    "background": "Background",
+    "success": "Download started",
+    "error": "Failed to download"
+  },
+  "preview": {
+    "title": "Preview",
+    "empty": "No preview available",
+    "download": "Download"
+  }
+} 

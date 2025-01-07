@@ -2,19 +2,15 @@ import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:8000/api';
 
-export interface ConvertResponse {
-  url: string;
-}
-
 export interface FormatsResponse {
   formats: string[];
-  dpi: {
+  themes: string[];
+  backgrounds: string[];
+  dpiRange: {
     min: number;
     max: number;
     default: number;
   };
-  themes: string[];
-  backgrounds: string[];
 }
 
 export const api = {
@@ -24,13 +20,15 @@ export const api = {
     dpi: number = 300,
     theme: string = 'default',
     background: string = 'transparent'
-  ): Promise<ConvertResponse> {
+  ): Promise<Blob> {
     const response = await axios.post(`${API_BASE_URL}/convert`, {
       code,
       format,
       dpi,
       theme,
       background
+    }, {
+      responseType: 'blob'
     });
     return response.data;
   },
@@ -41,7 +39,7 @@ export const api = {
     dpi: number = 300,
     theme: string = 'default',
     background: string = 'transparent'
-  ): Promise<ConvertResponse> {
+  ): Promise<Blob> {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('format', format);
@@ -52,7 +50,8 @@ export const api = {
     const response = await axios.post(`${API_BASE_URL}/upload`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
-      }
+      },
+      responseType: 'blob'
     });
     return response.data;
   },

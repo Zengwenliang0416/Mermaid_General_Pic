@@ -8,7 +8,6 @@ export interface ConversionHistory {
   dpi: number;
   theme: string;
   background: string;
-  url: string;
   timestamp: number;
 }
 
@@ -37,7 +36,7 @@ export const useMermaidStore = defineStore('mermaid', () => {
       supportedFormats.value = response.formats;
       supportedThemes.value = response.themes;
       supportedBackgrounds.value = response.backgrounds;
-      dpiRange.value = response.dpi;
+      dpiRange.value = response.dpiRange;
     } catch (err) {
       error.value = 'Failed to fetch supported formats';
       console.error(err);
@@ -57,7 +56,7 @@ export const useMermaidStore = defineStore('mermaid', () => {
     try {
       // 确保 DPI 值在有效范围内
       const validDpi = Math.min(Math.max(dpi.value, dpiRange.value.min), dpiRange.value.max);
-      const response = await api.convert(
+      const blob = await api.convert(
         code.value, 
         format.value, 
         validDpi,
@@ -65,17 +64,18 @@ export const useMermaidStore = defineStore('mermaid', () => {
         background.value
       );
       
+      const url = URL.createObjectURL(blob);
+      
       history.value.unshift({
         code: code.value,
         format: format.value,
         dpi: validDpi,
         theme: theme.value,
         background: background.value,
-        url: response.url,
         timestamp: Date.now()
       });
 
-      return response.url;
+      return url;
     } catch (err) {
       error.value = 'Failed to convert Mermaid code';
       console.error(err);
@@ -92,13 +92,15 @@ export const useMermaidStore = defineStore('mermaid', () => {
     try {
       // 确保 DPI 值在有效范围内
       const validDpi = Math.min(Math.max(dpi.value, dpiRange.value.min), dpiRange.value.max);
-      const response = await api.upload(
+      const blob = await api.upload(
         file, 
         format.value, 
         validDpi,
         theme.value,
         background.value
       );
+      
+      const url = URL.createObjectURL(blob);
       
       const fileReader = new FileReader();
       fileReader.onload = (e) => {
@@ -112,11 +114,10 @@ export const useMermaidStore = defineStore('mermaid', () => {
         dpi: validDpi,
         theme: theme.value,
         background: background.value,
-        url: response.url,
         timestamp: Date.now()
       });
 
-      return response.url;
+      return url;
     } catch (err) {
       error.value = 'Failed to upload file';
       console.error(err);

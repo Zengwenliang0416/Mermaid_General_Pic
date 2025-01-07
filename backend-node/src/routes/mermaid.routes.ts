@@ -1,132 +1,64 @@
-import { Router, Request, Response } from 'express';
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs/promises';
-import { config } from '../config/config';
+import express from 'express';
 import { MermaidService } from '../services/mermaid.service';
+import { config } from '../config/config';
+import logger from '../utils/logger';
+import path from 'path';
 
-const router = Router();
+type OutputFormat = typeof config.outputFormats[number];
+type Theme = typeof config.themes[number];
+type Background = typeof config.backgrounds[number];
 
-// 配置文件上传
-const storage = multer.diskStorage({
-  destination: config.imagesDir,
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  }
-});
+interface ConvertRequestBody {
+  code: string;
+  format: OutputFormat;
+  dpi: number;
+  theme: Theme;
+  background: Background;
+  filename?: string;
+}
 
-const upload = multer({
-  storage,
-  limits: {
-    fileSize: config.maxFileSize
-  },
-  fileFilter: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (config.allowedFileTypes.includes(ext)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Invalid file type'));
-    }
-  }
-});
+const router = express.Router();
 
 // 获取支持的格式
-router.get('/formats', (req: Request, res: Response) => {
+router.get('/formats', (req, res) => {
   res.json({
     formats: config.outputFormats,
-    dpi: config.dpiRange,
     themes: config.themes,
-    backgrounds: config.backgrounds
+    backgrounds: config.backgrounds,
+    dpiRange: config.dpiRange
   });
 });
 
-// 转换Mermaid代码
-router.post('/convert', async (req: Request, res: Response): Promise<void> => {
+// 转换 Mermaid 代码为图片
+router.post('/convert', async (req, res, next) => {
   try {
-    const { 
-      code, 
-      format = 'png', 
-      dpi = config.dpiRange.default,
-      theme = 'default',
-      background = 'transparent'
-    } = req.body;
+    const { code, format, dpi, theme, background } = req.body as ConvertRequestBody;
+    const filename = req.body.filename || 'mermaid-diagram';
 
     if (!code) {
-      res.status(400).json({ error: 'No Mermaid code provided' });
-      return;
+      return res.status(400).json({ error: 'Missing code parameter' });
     }
 
     if (!config.outputFormats.includes(format)) {
-      res.status(400).json({ error: 'Invalid output format' });
-      return;
+      return res.status(400).json({ error: 'Invalid format' });
     }
 
-    if (dpi < config.dpiRange.min || dpi > config.dpiRange.max) {
-      res.status(400).json({ error: 'Invalid DPI value' });
-      return;
+    const dpiValue = Number(dpi);
+    if (isNaN(dpiValue) || dpiValue < config.dpiRange.min || dpiValue > config.dpiRange.max) {
+      return res.status(400).json({ error: 'Invalid DPI value' });
     }
 
-    if (!config.themes.includes(theme)) {
-      res.status(400).json({ error: 'Invalid theme' });
-      return;
-    }
+    const imagePath = await MermaidService.generateDiagram(code, format, dpiValue, theme, background);
+    const fullPath = path.join(process.cwd(), imagePath.slice(1));
 
-    if (!config.backgrounds.includes(background)) {
-      res.status(400).json({ error: 'Invalid background' });
-      return;
-    }
+    // 设置下载响应头
+    res.setHeader('Content-Type', `image/${format === 'jpg' ? 'jpeg' : format}`);
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}.${format}"`);
+    res.sendFile(fullPath);
 
-    const outputPath = await MermaidService.generateDiagram(code, format, dpi, theme, background);
-    res.json({ url: outputPath });
   } catch (error) {
-    console.error('Error converting Mermaid code:', error);
-    res.status(500).json({ error: 'Failed to convert Mermaid code' });
-  }
-});
-
-// 上传文件并转换
-router.post('/upload', upload.single('file'), async (req: Request, res: Response): Promise<void> => {
-  try {
-    if (!req.file) {
-      res.status(400).json({ error: 'No file uploaded' });
-      return;
-    }
-
-    const { 
-      format = 'png', 
-      dpi = config.dpiRange.default,
-      theme = 'default',
-      background = 'transparent'
-    } = req.body;
-
-    if (!config.outputFormats.includes(format)) {
-      res.status(400).json({ error: 'Invalid output format' });
-      return;
-    }
-
-    if (dpi < config.dpiRange.min || dpi > config.dpiRange.max) {
-      res.status(400).json({ error: 'Invalid DPI value' });
-      return;
-    }
-
-    if (!config.themes.includes(theme)) {
-      res.status(400).json({ error: 'Invalid theme' });
-      return;
-    }
-
-    if (!config.backgrounds.includes(background)) {
-      res.status(400).json({ error: 'Invalid background' });
-      return;
-    }
-
-    const code = await fs.readFile(req.file.path, 'utf-8');
-    await fs.unlink(req.file.path); // 删除上传的文件
-
-    const outputPath = await MermaidService.generateDiagram(code, format, dpi, theme, background);
-    res.json({ url: outputPath });
-  } catch (error) {
-    console.error('Error processing uploaded file:', error);
-    res.status(500).json({ error: 'Failed to process uploaded file' });
+    logger.error('Error converting Mermaid code:', error);
+    next(error);
   }
 });
 

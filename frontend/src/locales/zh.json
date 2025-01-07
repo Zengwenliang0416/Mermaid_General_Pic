@@ -1,0 +1,23 @@
+{
+  "common": {
+    "cancel": "取消",
+    "download": "下载",
+    "error": "错误",
+    "success": "成功"
+  },
+  "download": {
+    "title": "下载设置",
+    "filename": "文件名",
+    "format": "格式",
+    "dpi": "DPI",
+    "theme": "主题",
+    "background": "背景",
+    "success": "开始下载",
+    "error": "下载失败"
+  },
+  "preview": {
+    "title": "预览",
+    "empty": "暂无预览",
+    "download": "下载"
+  }
+} 

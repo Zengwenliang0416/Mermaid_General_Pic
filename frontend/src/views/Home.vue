@@ -110,15 +110,10 @@
                         <el-icon><ZoomIn /></el-icon>
                       </el-button>
                     </el-button-group>
-                    <el-button
+                    <DownloadDialog
                       v-if="previewUrl"
-                      type="primary"
-                      link
-                      @click="handleDownload"
-                    >
-                      <el-icon><Download /></el-icon>
-                      {{ $t('preview.download') }}
-                    </el-button>
+                      :code="store.code"
+                    />
                   </div>
                 </div>
               </template>
@@ -146,6 +141,7 @@
 import { ref, onMounted } from 'vue';
 import { Upload, Download, ZoomIn, ZoomOut } from '@element-plus/icons-vue';
 import { useMermaidStore } from '../stores/mermaid';
+import DownloadDialog from '../components/DownloadDialog.vue';
 
 const store = useMermaidStore();
 const previewUrl = ref<string>('');
@@ -174,37 +170,60 @@ const handleCodeChange = () => {
 
 // 处理转换
 const handleConvert = async () => {
-  const url = await store.convert();
-  if (url) {
-    previewUrl.value = `http://localhost:8000${url}?t=${Date.now()}`;
-    zoomLevel.value = 1;
+  try {
+    // 预览时使用更高的 DPI 以获得更清晰的图像
+    const previewDpi = Math.max(300, window.devicePixelRatio * 300);
+    const url = await store.convert(store.code, store.format, previewDpi, store.theme, store.background);
+    if (url) {
+      // 如果之前有预览 URL，先释放它
+      if (previewUrl.value) {
+        URL.revokeObjectURL(previewUrl.value);
+      }
+      previewUrl.value = url;
+      zoomLevel.value = 1;
+    }
+  } catch (err) {
+    console.error('Error converting:', err);
   }
 };
 
 // 处理上传
 const handleUpload = async (file: File) => {
-  const url = await store.upload(file);
-  if (url) {
-    previewUrl.value = `http://localhost:8000${url}?t=${Date.now()}`;
-    zoomLevel.value = 1;
+  try {
+    const url = await store.upload(file);
+    if (url) {
+      // 如果之前有预览 URL，先释放它
+      if (previewUrl.value) {
+        URL.revokeObjectURL(previewUrl.value);
+      }
+      previewUrl.value = url;
+      zoomLevel.value = 1;
+    }
+  } catch (err) {
+    console.error('Error uploading:', err);
   }
   return false;
 };
 
 // 处理下载
 const handleDownload = async () => {
-  if (previewUrl.value) {
+  if (store.code) {
     try {
-      const response = await fetch(previewUrl.value);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      const blob = await api.convert(
+        store.code,
+        store.format,
+        store.dpi,
+        store.theme,
+        store.background
+      );
+      const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.download = `mermaid.${store.format}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Download failed:', err);
     }

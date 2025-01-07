@@ -13,7 +13,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(morgan('combined'));
-app.use('/images', express.static(config.imagesDir));
+
+// 静态文件服务
+app.use('/static', express.static(path.join(process.cwd(), 'static')));
 
 // 路由
 app.use('/api', mermaidRoutes);
