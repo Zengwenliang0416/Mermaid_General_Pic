@@ -5,9 +5,11 @@ import { config } from '../config/config';
 import logger from '../utils/logger';
 import { WorkerPool } from '../workers/worker-pool';
 import { DiagramCache } from '../utils/cache';
+import { RequestQueue } from '../utils/request-queue';
 
 export class MermaidService {
   private static workerPool = new WorkerPool('mermaid.worker.ts');
+  private static requestQueue = new RequestQueue(3); // 最多同时处理3个请求
 
   static async generateDiagram(
     code: string,
@@ -15,49 +17,54 @@ export class MermaidService {
     dpi: number,
     theme: typeof config.themes[number] = 'default',
     background: typeof config.backgrounds[number] = 'transparent'
-  ): Promise<string> {
+  ): Promise<{ path: string; data?: Buffer }> {
     // 检查缓存
     const cacheKey = DiagramCache.generateKey(code, outputFormat, dpi, theme, background);
-    const cachedPath = DiagramCache.get(cacheKey);
-    if (cachedPath) {
+    const cachedResult = await DiagramCache.get(cacheKey);
+    if (cachedResult) {
       logger.debug(`Cache hit for key: ${cacheKey}`);
-      return cachedPath;
+      return cachedResult;
     }
 
-    try {
-      const fileId = uuidv4();
-      const tempFile = path.join(config.imagesDir, `${fileId}.mmd`);
-      const finalFormat = outputFormat === 'jpg' ? 'png' : outputFormat;
-      const outputFile = path.join(config.imagesDir, `${fileId}.${finalFormat}`);
+    // 将转换任务加入队列
+    return this.requestQueue.enqueue(async () => {
+      try {
+        const fileId = uuidv4();
+        const tempFile = path.join(config.imagesDir, `${fileId}.mmd`);
+        const finalFormat = outputFormat === 'jpg' ? 'png' : outputFormat;
+        const outputFile = path.join(config.imagesDir, `${fileId}.${finalFormat}`);
 
-      // 确保目录存在
-      await fs.mkdir(config.imagesDir, { recursive: true });
+        // 确保目录存在
+        await fs.mkdir(config.imagesDir, { recursive: true });
 
-      // 使用 Worker 池处理转换
-      const result = await this.workerPool.execute({
-        code,
-        outputFormat,
-        dpi,
-        theme,
-        background,
-        tempFile,
-        outputFile
-      });
+        // 使用 Worker 池处理转换
+        const result = await this.workerPool.execute({
+          code,
+          outputFormat,
+          dpi,
+          theme,
+          background,
+          tempFile,
+          outputFile
+        });
 
-      if (!result.success) {
-        throw new Error(result.error);
+        if (!result.success) {
+          throw new Error(result.error);
+        }
+
+        const relativePath = `/static/images/${fileId}.${outputFormat}`;
+        const absolutePath = path.join(process.cwd(), relativePath);
+        
+        // 读取文件数据并存入缓存
+        const fileData = await fs.readFile(absolutePath);
+        await DiagramCache.set(cacheKey, relativePath, fileData);
+        
+        return { path: relativePath, data: fileData };
+      } catch (error) {
+        logger.error('Error generating diagram:', error);
+        throw error;
       }
-
-      const relativePath = `/static/images/${fileId}.${outputFormat}`;
-      
-      // 存入缓存
-      DiagramCache.set(cacheKey, relativePath);
-      
-      return relativePath;
-    } catch (error) {
-      logger.error('Error generating diagram:', error);
-      throw error;
-    }
+    });
   }
 
   static async cleanupOldFiles(): Promise<void> {
@@ -79,5 +86,12 @@ export class MermaidService {
     } catch (error) {
       logger.error('Error cleaning up files:', error);
     }
+  }
+
+  static getQueueStatus(): { size: number; activeCount: number } {
+    return {
+      size: this.requestQueue.size,
+      activeCount: this.requestQueue.activeCount
+    };
   }
 } 

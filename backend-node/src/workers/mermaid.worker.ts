@@ -33,9 +33,9 @@ if (parentPort) {
       // 写入临时文件
       await fs.writeFile(tempFile, code);
 
-      // 构建命令
+      // 构建命令，使用基本参数
       const scale = Math.max(1, Math.floor(dpi / 100));
-      const cmd = `npx @mermaid-js/mermaid-cli -i "${tempFile}" -o "${outputFile}" -t ${theme} -b ${background} -s ${scale}`;
+      const cmd = `npx @mermaid-js/mermaid-cli -i "${tempFile}" -o "${outputFile}" -t ${theme} -b ${background} -s ${scale} --quiet`;
 
       // 执行命令
       await execAsync(cmd);
@@ -46,8 +46,8 @@ if (parentPort) {
         const jpgOutputFile = outputFile.replace('.png', '.jpg');
         
         const convertCmd = platform === 'darwin'
-          ? `sips -s format jpeg "${outputFile}" --out "${jpgOutputFile}"`
-          : `convert "${outputFile}" "${jpgOutputFile}"`;
+          ? `sips -s format jpeg "${outputFile}" --out "${jpgOutputFile}" -s formatOptions best`
+          : `convert "${outputFile}" -quality 90 "${jpgOutputFile}"`;
 
         await execAsync(convertCmd);
         await fs.unlink(outputFile);
