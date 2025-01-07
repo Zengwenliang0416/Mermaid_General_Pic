@@ -50,10 +50,10 @@
                       <span>{{ t('preview.title') }}</span>
                     </div>
                     <el-image
-                      :src="`http://localhost:8000${item.url}`"
+                      :src="`${config.apiBaseUrl}${item.url}`"
                       fit="contain"
                       class="preview-image"
-                      :preview-src-list="[`http://localhost:8000${item.url}`]"
+                      :preview-src-list="[`${config.apiBaseUrl}${item.url}`]"
                       hide-on-click-modal
                     >
                       <template #placeholder>
@@ -132,6 +132,7 @@ import {
   Download,
   RefreshRight
 } from '@element-plus/icons-vue';
+import { config } from '../config/config';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -196,7 +197,7 @@ const handleLoad = (item: ConversionHistory) => {
 // 处理下载
 const handleDownload = async (item: ConversionHistory) => {
   try {
-    const response = await fetch(`http://localhost:8000${item.url}`);
+    const response = await fetch(`${config.apiBaseUrl}${item.url}`);
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');

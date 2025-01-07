@@ -58,20 +58,20 @@ export const useMermaidStore = defineStore('mermaid', () => {
       const validDpi = Math.min(Math.max(dpi.value, dpiRange.value.min), dpiRange.value.max);
       const blob = await api.convert(
         code.value, 
-        'png',
+        format.value,
         validDpi,
-        'default',
-        'white'
+        theme.value,
+        background.value
       );
       
       const url = URL.createObjectURL(blob);
       
       history.value.unshift({
         code: code.value,
-        format: 'png',
+        format: format.value,
         dpi: validDpi,
-        theme: 'default',
-        background: 'white',
+        theme: theme.value,
+        background: background.value,
         timestamp: Date.now()
       });
 
@@ -94,10 +94,10 @@ export const useMermaidStore = defineStore('mermaid', () => {
       const validDpi = Math.min(Math.max(dpi.value, dpiRange.value.min), dpiRange.value.max);
       const blob = await api.upload(
         file, 
-        'png',
+        format.value,
         validDpi,
-        'default',
-        'white'
+        theme.value,
+        background.value
       );
       
       const url = URL.createObjectURL(blob);
@@ -110,10 +110,10 @@ export const useMermaidStore = defineStore('mermaid', () => {
 
       history.value.unshift({
         code: code.value,
-        format: 'png',
+        format: format.value,
         dpi: validDpi,
-        theme: 'default',
-        background: 'white',
+        theme: theme.value,
+        background: background.value,
         timestamp: Date.now()
       });
 
@@ -134,10 +134,10 @@ export const useMermaidStore = defineStore('mermaid', () => {
   // 从历史记录中加载
   function loadFromHistory(item: ConversionHistory) {
     code.value = item.code;
-    format.value = 'png';
+    format.value = item.format;
     dpi.value = item.dpi;
-    theme.value = 'default';
-    background.value = 'white';
+    theme.value = item.theme;
+    background.value = item.background;
   }
 
   return {

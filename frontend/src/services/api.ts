@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { config } from '../config/config';
 
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = `${config.apiBaseUrl}/api`;
 
 export interface FormatsResponse {
   formats: string[];

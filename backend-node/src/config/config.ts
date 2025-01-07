@@ -5,8 +5,8 @@ dotenv.config();
 
 export const config = {
   port: process.env.PORT || 8000,
-  staticDir: path.join(process.cwd(), 'static'),
-  imagesDir: path.join(process.cwd(), 'static/images'),
+  staticDir: path.join(__dirname, '../../static'),
+  imagesDir: path.join(__dirname, '../../static/images'),
   allowedFileTypes: ['.txt', '.mmd'],
   maxFileSize: 1024 * 1024, // 1MB
   outputFormats: ['png', 'jpg', 'svg'] as const,
