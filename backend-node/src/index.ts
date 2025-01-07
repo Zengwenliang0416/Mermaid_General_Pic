@@ -1,40 +1,93 @@
 import express from 'express';
 import cors from 'cors';
-import morgan from 'morgan';
-import path from 'path';
 import { config } from './config/config';
+import { loggingMiddleware } from './utils/logging-middleware';
+import { logSystemEvent } from './utils/logger';
 import mermaidRoutes from './routes/mermaid.routes';
-import logger from './utils/logger';
 import { MermaidService } from './services/mermaid.service';
 
 const app = express();
 
-// 中间件
+// 基础中间件
 app.use(cors());
 app.use(express.json());
-app.use(morgan('combined'));
+app.use(express.static('public'));
 
-// 静态文件服务
-app.use('/static', express.static(path.join(process.cwd(), 'static')));
+// 添加日志中间件
+app.use(loggingMiddleware);
 
 // 路由
 app.use('/api', mermaidRoutes);
 
-// 错误处理
+// 静态文件服务
+app.use('/static', express.static(config.imagesDir));
+
+// 错误处理中间件
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  logger.error('Unhandled error:', err);
-  res.status(500).json({ error: 'Internal server error' });
+  res.status(500).json({ error: err.message || 'Internal Server Error' });
+});
+
+// 启动服务器
+const server = app.listen(config.port, () => {
+  logSystemEvent('Server started', {
+    port: config.port,
+    env: process.env.NODE_ENV,
+    nodeVersion: process.version
+  });
+});
+
+// 优雅关闭
+process.on('SIGTERM', () => {
+  logSystemEvent('Received SIGTERM signal', {
+    activeConnections: server.connections
+  });
+  
+  server.close(() => {
+    logSystemEvent('Server shutdown complete');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  logSystemEvent('Received SIGINT signal', {
+    activeConnections: server.connections
+  });
+  
+  server.close(() => {
+    logSystemEvent('Server shutdown complete');
+    process.exit(0);
+  });
+});
+
+// 未捕获的异常处理
+process.on('uncaughtException', (error) => {
+  logSystemEvent('Uncaught Exception', {
+    error: error.message,
+    stack: error.stack
+  });
+  
+  // 给进程一点时间来记录日志
+  setTimeout(() => {
+    process.exit(1);
+  }, 1000);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  logSystemEvent('Unhandled Rejection', {
+    reason,
+    promise
+  });
 });
 
 // 定期清理旧文件
+const CLEANUP_INTERVAL = 24 * 60 * 60 * 1000; // 24小时
 setInterval(() => {
   MermaidService.cleanupOldFiles()
-    .catch(err => logger.error('Error cleaning up files:', err));
-}, 60 * 60 * 1000); // 每小时执行一次
+    .catch(error => {
+      logSystemEvent('File cleanup failed', {
+        error: error.message
+      });
+    });
+}, CLEANUP_INTERVAL);
 
-// 启动服务器
-const host = process.env.HOST || '0.0.0.0';
-const port = typeof config.port === 'string' ? parseInt(config.port, 10) : config.port;
-app.listen(port, host, () => {
-  logger.info(`Server is running on ${host}:${port}`);
-}); 
+export default app; 
