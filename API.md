@@ -2,118 +2,13 @@
 
 ## 基础信息
 
-- 基础 URL: `http://localhost:8000`
+- 基础路径: `/api`
 - 所有请求和响应均使用 JSON 格式
-- 所有响应都包含适当的 HTTP 状态码
+- 所有请求都会被记录到日志系统中
 
-## 端点说明
+## 认证
 
-### 获取支持的格式
-
-获取支持的输出格式、DPI 范围、主题和背景选项。
-
-```http
-GET /api/formats
-```
-
-#### 响应
-
-```json
-{
-  "formats": ["png", "jpg", "svg"],
-  "dpi": {
-    "min": 72,
-    "max": 600,
-    "default": 300
-  },
-  "themes": ["default", "dark", "forest", "neutral"],
-  "backgrounds": ["transparent", "white"]
-}
-```
-
-### 转换 Mermaid 代码
-
-将 Mermaid 代码转换为图片。
-
-```http
-POST /api/convert
-Content-Type: application/json
-```
-
-#### 请求体
-
-```json
-{
-  "code": "graph TD;A-->B;",
-  "format": "png",
-  "dpi": 300,
-  "theme": "default",
-  "background": "transparent"
-}
-```
-
-| 字段 | 类型 | 必填 | 描述 |
-|------|------|------|------|
-| code | string | 是 | Mermaid 图表代码 |
-| format | string | 是 | 输出格式（png/jpg/svg） |
-| dpi | number | 否 | 图片分辨率（72-600） |
-| theme | string | 否 | 主题样式 |
-| background | string | 否 | 背景类型 |
-
-#### 响应
-
-```json
-{
-  "url": "/images/abc123.png",
-  "format": "png"
-}
-```
-
-### 上传文件转换
-
-上传包含 Mermaid 代码的文件并转换为图片。
-
-```http
-POST /api/upload
-Content-Type: multipart/form-data
-```
-
-#### 请求参数
-
-| 字段 | 类型 | 必填 | 描述 |
-|------|------|------|------|
-| file | file | 是 | Mermaid 文件（.txt/.mmd） |
-| format | string | 是 | 输出格式 |
-| dpi | number | 否 | 图片分辨率 |
-| theme | string | 否 | 主题样式 |
-| background | string | 否 | 背景类型 |
-
-#### 响应
-
-```json
-{
-  "url": "/images/abc123.png",
-  "format": "png"
-}
-```
-
-### 获取生成的图片
-
-获取已生成的图片文件。
-
-```http
-GET /images/:filename
-```
-
-#### 参数
-
-| 参数 | 类型 | 描述 |
-|------|------|------|
-| filename | string | 图片文件名 |
-
-#### 响应
-
-返回图片文件的二进制数据。
+目前 API 不需要认证。
 
 ## 错误处理
 
@@ -121,85 +16,158 @@ GET /images/:filename
 
 ```json
 {
-  "error": "错误描述信息"
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "错误描述",
+    "details": {} // 可选的详细信息
+  }
 }
 ```
 
-### HTTP 状态码
+错误会被记录到 `error.log` 文件中，包含完整的错误堆栈和请求信息。
 
-- 200: 请求成功
-- 400: 请求参数错误
-- 404: 资源不存在
-- 415: 不支持的媒体类型
-- 500: 服务器内部错误
+## 端点
 
-### 常见错误
+### 转换 Mermaid 图表
 
-1. 无效的 Mermaid 代码
+将 Mermaid 代码转换为图片。
+
+```
+POST /convert
+```
+
+#### 请求参数
+
 ```json
 {
-  "error": "Invalid Mermaid syntax"
+  "code": "graph TD\nA-->B",
+  "outputFormat": "png",
+  "theme": "default",
+  "backgroundColor": "transparent",
+  "dpi": 300
 }
 ```
 
-2. 不支持的输出格式
+- `code`: Mermaid 代码 (必需)
+- `outputFormat`: 输出格式，支持 "png"、"svg"、"jpg" (必需)
+- `theme`: 主题，支持 "default"、"dark"、"forest"、"neutral" (可选，默认 "default")
+- `backgroundColor`: 背景色，支持 "transparent" 或十六进制颜色值 (可选，默认 "transparent")
+- `dpi`: DPI 值，范围 72-600 (可选，默认 300)
+
+#### 响应
+
+成功响应 (200):
 ```json
 {
-  "error": "Unsupported output format"
+  "url": "/images/diagram-123456.png",
+  "format": "png",
+  "size": 12345
 }
 ```
 
-3. 文件大小超限
+### 获取支持的格式
+
+获取支持的输出格式列表。
+
+```
+GET /formats
+```
+
+#### 响应
+
 ```json
 {
-  "error": "File size exceeds limit (1MB)"
+  "formats": ["png", "svg", "jpg"]
 }
 ```
 
-## 示例
+### 上传 Mermaid 文件
 
-### cURL 示例
+上传包含 Mermaid 代码的文件并转换。
 
-1. 获取支持的格式
-```bash
-curl http://localhost:8000/api/formats
+```
+POST /upload
 ```
 
-2. 转换 Mermaid 代码
-```bash
-curl -X POST http://localhost:8000/api/convert \
-  -H "Content-Type: application/json" \
-  -d '{
-    "code": "graph TD;A-->B;",
-    "format": "png",
-    "dpi": 300,
-    "theme": "default",
-    "background": "transparent"
-  }'
+#### 请求
+
+使用 `multipart/form-data` 格式：
+- `file`: Mermaid 代码文件
+- `outputFormat`: 输出格式
+- `theme`: 主题 (可选)
+- `backgroundColor`: 背景色 (可选)
+- `dpi`: DPI 值 (可选)
+
+#### 响应
+
+与 `/convert` 端点相同。
+
+### 获取生成的图片
+
+```
+GET /images/:filename
 ```
 
-3. 上传文件
-```bash
-curl -X POST http://localhost:8000/api/upload \
-  -F "file=@diagram.mmd" \
-  -F "format=png" \
-  -F "dpi=300" \
-  -F "theme=default" \
-  -F "background=transparent"
+#### 参数
+
+- `filename`: 图片文件名，从 `/convert` 或 `/upload` 响应中获取
+
+#### 响应
+
+直接返回图片文件。
+
+## 性能监控
+
+所有 API 请求都会被记录以下性能指标：
+
+- 响应时间
+- 内存使用
+- CPU 使用率
+- 缓存命中率
+
+慢请求（响应时间 > 1秒）会被额外记录到性能日志中。
+
+## 日志记录
+
+每个 API 请求都会生成以下日志：
+
+### 请求日志
+```
+[时间] [INFO] HTTP 请求
+方法: POST
+路径: /api/convert
+请求ID: req-123456
+IP: 127.0.0.1
+用户代理: Mozilla/5.0 ...
+请求体: {...}
 ```
 
-## 限制说明
+### 响应日志
+```
+[时间] [INFO] HTTP 响应
+请求ID: req-123456
+状态码: 200
+响应时间: 235ms
+响应体大小: 12345 bytes
+```
 
-- 最大文件大小：1MB
-- 支持的文件类型：.txt, .mmd
-- DPI 范围：72-600
-- 图片保存时间：24小时
-- 并发请求限制：每分钟 60 次
+### 错误日志
+```
+[时间] [ERROR] 请求处理失败
+请求ID: req-123456
+错误: Invalid Mermaid syntax
+堆栈: Error: Invalid Mermaid syntax
+    at MermaidService.validate ...
+```
 
-## 安全说明
+## 限流
 
-- 所有上传的文件都会进行安全检查
-- 生成的图片使用随机文件名
-- 定期清理过期文件
-- 限制并发请求数量
-- 验证所有输入参数 
+- 每个 IP 每分钟最多 60 个请求
+- 超出限制会返回 429 状态码
+- 限流事件会被记录到日志中
+
+## 缓存
+
+- 相同的转换请求会使用缓存
+- 缓存命中会在日志中标记
+- 缓存有效期为 24 小时 
