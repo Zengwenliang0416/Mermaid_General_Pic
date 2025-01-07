@@ -110,7 +110,7 @@ const dialogVisible = ref(false);
 const downloading = ref(false);
 
 const form = reactive({
-  filename: 'mermaid-diagram',
+  filename: 'mermaid-picture',
   format: store.format,
   dpi: store.dpi,
   theme: store.theme,
