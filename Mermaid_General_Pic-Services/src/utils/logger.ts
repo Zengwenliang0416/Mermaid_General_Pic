@@ -93,7 +93,7 @@ interface PerformanceMetrics {
 const customFormat = winston.format.printf(({ level, message, timestamp, ...metadata }) => {
   // 确保时间戳始终存在
   const ts = timestamp || new Date().toISOString();
-  let msg = `${ts} [${level.toUpperCase()}]: ${message}`;
+  let msg = `[${ts}] [${level.toUpperCase().padEnd(5)}] [${message}]`;
   
   if (metadata.requestId) {
     msg = `${msg} [RequestID: ${metadata.requestId}]`;
@@ -136,40 +136,34 @@ const consoleFormat = winston.format.combine(
     const colorizer = winston.format.colorize();
     
     // 给时间戳添加样式
-    const coloredTs = colorizer.colorize('trace', ts.toString());
+    const coloredTs = colorizer.colorize('trace', `[${ts}]`);
     
     // 给日志级别添加彩虹色
-    const brackets = colorizer.colorize('brackets', '[]');
-    const coloredLevel = `${brackets[0]}${colorizer.colorize(level, level.toUpperCase())}${brackets[1]}`;
+    const coloredLevel = colorizer.colorize(level, `[${level.toUpperCase().padEnd(5)}]`);
     
     // 给消息添加颜色
     const msgStr = typeof message === 'string' ? message : JSON.stringify(message);
     const coloredMessage = ['error', 'warn'].includes(level) 
-      ? colorizer.colorize(level, msgStr)
+      ? colorizer.colorize(level, `[${msgStr}]`)
       : level === 'info' 
-        ? colorizer.colorize('success', msgStr)
-        : msgStr;
+        ? colorizer.colorize('success', `[${msgStr}]`)
+        : `[${msgStr}]`;
 
     // 组装基本消息
-    const separator = colorizer.colorize('separator', ':');
-    let msg = `${coloredTs} ${coloredLevel}${separator} ${coloredMessage}`;
+    let msg = `${coloredTs} ${coloredLevel} ${coloredMessage}`;
     
     // 给 RequestID 添加样式
     if (metadata.requestId) {
-      const reqIdBrackets = colorizer.colorize('brackets', '[]');
-      const coloredReqId = colorizer.colorize('requestId', `RequestID: ${metadata.requestId}`);
-      msg = `${msg} ${reqIdBrackets[0]}${coloredReqId}${reqIdBrackets[1]}`;
+      const coloredReqId = colorizer.colorize('requestId', `[RequestID: ${metadata.requestId}]`);
+      msg = `${msg} ${coloredReqId}`;
     }
     
     // 给性能指标添加彩虹色
     if (metadata.performance) {
       const performance = metadata.performance as PerformanceMetrics;
-      const memBrackets = colorizer.colorize('brackets', '[]');
       const memoryInfo = colorizer.colorize('memory', 
-        `Memory: ${performance.memory.heapUsed}MB/${performance.memory.heapTotal}MB`);
-      const cpuInfo = colorizer.colorize('cpu', 
-        `CPU: ${performance.cpu[0].toFixed(2)}`);
-      msg = `${msg} ${memBrackets[0]}${memoryInfo}, ${cpuInfo}${memBrackets[1]}`;
+        `[Memory: ${performance.memory.heapUsed}MB/${performance.memory.heapTotal}MB, CPU: ${performance.cpu[0].toFixed(2)}]`);
+      msg = `${msg} ${memoryInfo}`;
     }
 
     // 给剩余的元数据添加彩虹色
@@ -179,16 +173,7 @@ const consoleFormat = winston.format.combine(
 
     if (Object.keys(remainingMetadata).length > 0) {
       const metadataStr = JSON.stringify(remainingMetadata);
-      if (remainingMetadata.error) {
-        msg += ` ${colorizer.colorize('failure', metadataStr)}`;
-      } 
-      else if (remainingMetadata.event) {
-        const eventBrackets = colorizer.colorize('brackets', '{}');
-        msg += ` ${eventBrackets[0]}${colorizer.colorize('event', metadataStr)}${eventBrackets[1]}`;
-      }
-      else {
-        msg += ` ${colorizer.colorize('metadata', metadataStr)}`;
-      }
+      msg += ` ${colorizer.colorize('metadata', metadataStr)}`;
     }
     
     return msg;
