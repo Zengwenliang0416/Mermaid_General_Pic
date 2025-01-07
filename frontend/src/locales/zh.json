@@ -3,15 +3,31 @@
     "cancel": "取消",
     "download": "下载",
     "error": "错误",
-    "success": "成功"
+    "success": "成功",
+    "clear": "清除",
+    "load": "加载"
+  },
+  "editor": {
+    "title": "Mermaid 编辑器",
+    "upload": "上传",
+    "placeholder": "在此输入 Mermaid 代码...",
+    "convert": "转换",
+    "theme": "主题",
+    "background": "背景",
+    "format": "格式",
+    "dpi": "DPI"
   },
   "download": {
     "title": "下载设置",
     "filename": "文件名",
+    "filename_placeholder": "请输入文件名",
     "format": "格式",
-    "dpi": "DPI",
+    "format_placeholder": "请选择格式",
+    "dpi": "分辨率 (DPI)",
     "theme": "主题",
+    "theme_placeholder": "请选择主题",
     "background": "背景",
+    "background_placeholder": "请选择背景",
     "success": "开始下载",
     "error": "下载失败"
   },
@@ -19,5 +35,28 @@
     "title": "预览",
     "empty": "暂无预览",
     "download": "下载"
+  },
+  "history": {
+    "title": "转换历史",
+    "empty": "暂无转换历史",
+    "clear": "清空历史",
+    "clear_confirm": "确定要清空所有转换历史吗？",
+    "clear_success": "历史记录已清空",
+    "clear_error": "清空历史记录失败",
+    "load_success": "代码已加载",
+    "load_error": "加载代码失败",
+    "time": "时间",
+    "code": "代码",
+    "actions": "操作"
+  },
+  "theme": {
+    "default": "默认",
+    "dark": "暗色",
+    "forest": "森林",
+    "neutral": "中性"
+  },
+  "background": {
+    "transparent": "透明",
+    "white": "白色"
   }
 } 

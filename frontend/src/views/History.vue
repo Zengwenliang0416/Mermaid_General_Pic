@@ -5,20 +5,20 @@
         <el-card>
           <template #header>
             <div class="card-header">
-              <span>{{ $t('history.title') }}</span>
+              <span>{{ t('history.title') }}</span>
               <el-button
                 type="danger"
                 :disabled="!store.history.length"
                 @click="handleClear"
               >
-                {{ $t('history.clear') }}
+                {{ t('common.clear') }}
               </el-button>
             </div>
           </template>
 
           <el-empty
             v-if="!store.history.length"
-            :description="$t('history.empty')"
+            :description="t('history.empty')"
           />
 
           <el-timeline v-else>
@@ -30,9 +30,15 @@
               <el-card class="history-item">
                 <div class="history-content">
                   <div class="code-preview">
+                    <div class="code-header">
+                      <span>{{ t('history.code') }}</span>
+                    </div>
                     <pre>{{ item.code }}</pre>
                   </div>
                   <div class="image-preview">
+                    <div class="preview-header">
+                      <span>{{ t('preview.title') }}</span>
+                    </div>
                     <el-image
                       :src="`http://localhost:8000${item.url}`"
                       fit="contain"
@@ -44,6 +50,8 @@
                   <div class="history-info">
                     <el-tag size="small">{{ item.format.toUpperCase() }}</el-tag>
                     <el-tag size="small" type="info">{{ item.dpi }} DPI</el-tag>
+                    <el-tag size="small" type="success">{{ t(`theme.${item.theme}`) }}</el-tag>
+                    <el-tag size="small" type="warning">{{ t(`background.${item.background}`) }}</el-tag>
                   </div>
                   <div class="history-actions">
                     <el-button
@@ -51,14 +59,14 @@
                       link
                       @click="handleLoad(item)"
                     >
-                      {{ $t('history.load') }}
+                      {{ t('common.load') }}
                     </el-button>
                     <el-button
                       type="primary"
                       link
                       @click="handleDownload(item)"
                     >
-                      {{ $t('history.download') }}
+                      {{ t('common.download') }}
                     </el-button>
                   </div>
                 </div>
@@ -73,7 +81,7 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { ElMessageBox } from 'element-plus';
+import { ElMessageBox, ElMessage } from 'element-plus';
 import { useMermaidStore, type ConversionHistory } from '../stores/mermaid';
 import { useI18n } from 'vue-i18n';
 
@@ -90,13 +98,16 @@ const formatDate = (timestamp: number) => {
 const handleClear = async () => {
   try {
     await ElMessageBox.confirm(
-      t('history.clearConfirm'),
-      t('history.clearTitle'),
+      t('history.clear_confirm'),
+      t('history.clear'),
       {
+        confirmButtonText: t('common.clear'),
+        cancelButtonText: t('common.cancel'),
         type: 'warning'
       }
     );
     store.clearHistory();
+    ElMessage.success(t('history.clear_success'));
   } catch {
     // 用户取消
   }
@@ -106,6 +117,7 @@ const handleClear = async () => {
 const handleLoad = (item: ConversionHistory) => {
   store.loadFromHistory(item);
   router.push('/');
+  ElMessage.success(t('history.load_success'));
 };
 
 // 处理下载
@@ -123,6 +135,7 @@ const handleDownload = async (item: ConversionHistory) => {
     window.URL.revokeObjectURL(url);
   } catch (err) {
     console.error('Download failed:', err);
+    ElMessage.error(t('download.error'));
   }
 };
 </script>
@@ -148,42 +161,52 @@ const handleDownload = async (item: ConversionHistory) => {
   margin-bottom: 20px;
 }
 
-.code-preview {
+.code-preview,
+.image-preview {
   flex: 1;
-  overflow: auto;
-  max-height: 200px;
+  display: flex;
+  flex-direction: column;
   background-color: #f5f7fa;
   border-radius: 4px;
-  padding: 10px;
+  overflow: hidden;
+}
+
+.code-header,
+.preview-header {
+  padding: 8px 12px;
+  background-color: #e4e7ed;
+  font-weight: 500;
+  font-size: 14px;
 }
 
 .code-preview pre {
   margin: 0;
+  padding: 10px;
   white-space: pre-wrap;
   word-wrap: break-word;
   font-family: monospace;
   font-size: 12px;
+  overflow: auto;
+  max-height: 180px;
 }
 
-.image-preview {
-  flex: 1;
+.image-preview .el-image {
+  padding: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #f5f7fa;
-  border-radius: 4px;
-  padding: 10px;
 }
 
 .preview-image {
   max-width: 100%;
-  max-height: 200px;
+  max-height: 180px;
 }
 
 .history-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 10px;
 }
 
 .history-info {
@@ -194,5 +217,17 @@ const handleDownload = async (item: ConversionHistory) => {
 .history-actions {
   display: flex;
   gap: 10px;
+}
+
+:deep(.el-timeline-item__node) {
+  background-color: #409eff;
+}
+
+:deep(.el-timeline-item__tail) {
+  border-left-color: #e4e7ed;
+}
+
+:deep(.el-timeline-item__timestamp) {
+  color: #606266;
 }
 </style> 

@@ -8,7 +8,7 @@
             <el-card>
               <template #header>
                 <div class="card-header">
-                  <span>{{ $t('editor.title') }}</span>
+                  <span>{{ t('editor.title') }}</span>
                   <el-upload
                     class="upload-btn"
                     :show-file-list="false"
@@ -17,7 +17,7 @@
                   >
                     <el-button type="primary">
                       <el-icon><Upload /></el-icon>
-                      {{ $t('editor.upload') }}
+                      {{ t('editor.upload') }}
                     </el-button>
                   </el-upload>
                 </div>
@@ -26,7 +26,7 @@
                 v-model="store.code"
                 type="textarea"
                 :rows="15"
-                :placeholder="$t('editor.placeholder')"
+                :placeholder="t('editor.placeholder')"
                 @input="handleCodeChange"
               />
               <div class="settings">
@@ -50,7 +50,7 @@
                   <el-option
                     v-for="theme in store.supportedThemes"
                     :key="theme"
-                    :label="theme"
+                    :label="t(`theme.${theme}`)"
                     :value="theme"
                   />
                 </el-select>
@@ -62,7 +62,7 @@
                   <el-option
                     v-for="bg in store.supportedBackgrounds"
                     :key="bg"
-                    :label="bg"
+                    :label="t(`background.${bg}`)"
                     :value="bg"
                   />
                 </el-select>
@@ -70,7 +70,7 @@
                   v-model="store.dpi"
                   :min="store.dpiRange.min"
                   :max="store.dpiRange.max"
-                  :step="1"
+                  :step="100"
                   class="dpi-input"
                   @change="handleDpiChange"
                 />
@@ -79,7 +79,7 @@
                   :loading="store.isLoading"
                   @click="handleConvert"
                 >
-                  {{ $t('editor.convert') }}
+                  {{ t('editor.convert') }}
                 </el-button>
               </div>
               <el-alert
@@ -97,7 +97,7 @@
             <el-card>
               <template #header>
                 <div class="card-header">
-                  <span>{{ $t('preview.title') }}</span>
+                  <span>{{ t('preview.title') }}</span>
                   <div class="preview-controls">
                     <el-button-group v-if="previewUrl">
                       <el-button @click="handleZoomOut">
@@ -126,7 +126,7 @@
                   class="preview-image"
                 />
                 <div v-else class="empty-preview">
-                  {{ $t('preview.empty') }}
+                  {{ t('preview.empty') }}
                 </div>
               </div>
             </el-card>
@@ -142,7 +142,9 @@ import { ref, onMounted } from 'vue';
 import { Upload, Download, ZoomIn, ZoomOut } from '@element-plus/icons-vue';
 import { useMermaidStore } from '../stores/mermaid';
 import DownloadDialog from '../components/DownloadDialog.vue';
+import { useI18n } from 'vue-i18n';
 
+const { t } = useI18n();
 const store = useMermaidStore();
 const previewUrl = ref<string>('');
 const zoomLevel = ref(1);
