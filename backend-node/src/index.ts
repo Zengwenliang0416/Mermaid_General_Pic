@@ -31,6 +31,8 @@ setInterval(() => {
 }, 60 * 60 * 1000); // 每小时执行一次
 
 // 启动服务器
-app.listen(config.port, () => {
-  logger.info(`Server is running on port ${config.port}`);
+const host = process.env.HOST || '0.0.0.0';
+const port = typeof config.port === 'string' ? parseInt(config.port, 10) : config.port;
+app.listen(port, host, () => {
+  logger.info(`Server is running on ${host}:${port}`);
 }); 

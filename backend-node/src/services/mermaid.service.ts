@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs/promises';
 import path from 'path';
 import { config } from '../config/config';
+import logger from '../utils/logger';
 
 const execAsync = promisify(exec);
 
@@ -28,7 +29,8 @@ export class MermaidService {
 
       // 构建命令
       const cmd = [
-        'npx mmdc',
+        'npx',
+        '@mermaid-js/mermaid-cli',
         `-i "${tempFile}"`,
         `-o "${outputFile}"`,
         `-b ${background}`,
@@ -38,19 +40,52 @@ export class MermaidService {
         `-s ${dpi/72}`,
       ];
 
-      if (outputFormat !== 'svg') {
-        cmd.push(`-f ${outputFormat}`);
-      }
+      // 只支持 png 和 svg 格式
+      const finalFormat = outputFormat === 'jpg' ? 'png' : outputFormat;
+      const finalOutputFile = path.join(config.imagesDir, `${fileId}.${finalFormat}`);
+      cmd[3] = `-o "${finalOutputFile}"`;
+      cmd.push(`-f ${finalFormat}`);
 
       // 执行命令
-      await execAsync(cmd.join(' '));
+      logger.debug(`Executing command: ${cmd.join(' ')}`);
+      const { stdout, stderr } = await execAsync(cmd.join(' '));
+      if (stderr && !stderr.includes('Store is a function')) {
+        logger.warn(`Command stderr: ${stderr}`);
+      }
+      if (stdout) {
+        logger.debug(`Command stdout: ${stdout}`);
+      }
+
+      // 如果需要 jpg 格式，则使用 ImageMagick 转换
+      if (outputFormat === 'jpg' && finalFormat === 'png') {
+        try {
+          // 检测系统类型
+          const platform = process.platform;
+          let convertCmd = '';
+          
+          if (platform === 'darwin') {
+            // macOS 使用 sips 命令
+            convertCmd = `sips -s format jpeg "${finalOutputFile}" --out "${outputFile}"`;
+          } else {
+            // Linux/Windows 使用 ImageMagick
+            convertCmd = `convert "${finalOutputFile}" "${outputFile}"`;
+          }
+
+          await execAsync(convertCmd);
+          await fs.unlink(finalOutputFile);
+        } catch (error) {
+          logger.error('Error converting to JPG:', error);
+          // 如果转换失败，返回 PNG 文件
+          return `/images/${fileId}.${finalFormat}`;
+        }
+      }
 
       // 清理临时文件
       await fs.unlink(tempFile);
 
       return `/images/${fileId}.${outputFormat}`;
     } catch (error) {
-      console.error('Error generating diagram:', error);
+      logger.error('Error generating diagram:', error);
       throw error;
     }
   }
@@ -71,7 +106,7 @@ export class MermaidService {
         }
       }
     } catch (error) {
-      console.error('Error cleaning up files:', error);
+      logger.error('Error cleaning up files:', error);
     }
   }
 } 

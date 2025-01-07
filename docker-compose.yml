@@ -13,6 +13,7 @@ services:
       - backend
     networks:
       - mermaid-network
+    restart: unless-stopped
 
   backend:
     build:
@@ -23,6 +24,8 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=8000
+      - HOST=0.0.0.0
+      - LOG_LEVEL=debug
     volumes:
       - ./backend-node/logs:/app/logs
       - ./backend-node/static:/app/static
@@ -34,6 +37,7 @@ services:
       start_period: 10s
     networks:
       - mermaid-network
+    restart: unless-stopped
 
 networks:
   mermaid-network:
