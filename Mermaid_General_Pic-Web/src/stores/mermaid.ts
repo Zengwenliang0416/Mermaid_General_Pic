@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { api } from '../services/api';
 
 export interface ConversionHistory {
@@ -9,15 +9,56 @@ export interface ConversionHistory {
   theme: string;
   background: string;
   timestamp: number;
+  url?: string;
 }
 
+// Load initial state from localStorage
+const loadState = () => {
+  try {
+    const savedCode = localStorage.getItem('mermaid_code') || '';
+    const savedFormat = localStorage.getItem('mermaid_format') || 'png';
+    const savedDpi = Number(localStorage.getItem('mermaid_dpi')) || 300;
+    const savedTheme = localStorage.getItem('mermaid_theme') || 'default';
+    const savedBackground = localStorage.getItem('mermaid_background') || 'white';
+    const savedHistory = JSON.parse(localStorage.getItem('mermaid_history') || '[]');
+    
+    return {
+      savedCode,
+      savedFormat,
+      savedDpi,
+      savedTheme,
+      savedBackground,
+      savedHistory
+    };
+  } catch (error) {
+    console.error('Failed to load state from localStorage:', error);
+    return {
+      savedCode: '',
+      savedFormat: 'png',
+      savedDpi: 300,
+      savedTheme: 'default',
+      savedBackground: 'white',
+      savedHistory: []
+    };
+  }
+};
+
+const {
+  savedCode,
+  savedFormat,
+  savedDpi,
+  savedTheme,
+  savedBackground,
+  savedHistory
+} = loadState();
+
 export const useMermaidStore = defineStore('mermaid', () => {
-  const code = ref('');
-  const format = ref('png');
-  const dpi = ref(300);
-  const theme = ref('default');
-  const background = ref('white');
-  const history = ref<ConversionHistory[]>([]);
+  const code = ref(savedCode);
+  const format = ref(savedFormat);
+  const dpi = ref(savedDpi);
+  const theme = ref(savedTheme);
+  const background = ref(savedBackground);
+  const history = ref<ConversionHistory[]>(savedHistory);
   const isLoading = ref(false);
   const error = ref<string | null>(null);
   const supportedFormats = ref<string[]>([]);
@@ -28,6 +69,31 @@ export const useMermaidStore = defineStore('mermaid', () => {
     max: 600,
     default: 300
   });
+
+  // Watch for changes and save to localStorage
+  watch(code, (newCode) => {
+    localStorage.setItem('mermaid_code', newCode);
+  });
+
+  watch(format, (newFormat) => {
+    localStorage.setItem('mermaid_format', newFormat);
+  });
+
+  watch(dpi, (newDpi) => {
+    localStorage.setItem('mermaid_dpi', String(newDpi));
+  });
+
+  watch(theme, (newTheme) => {
+    localStorage.setItem('mermaid_theme', newTheme);
+  });
+
+  watch(background, (newBackground) => {
+    localStorage.setItem('mermaid_background', newBackground);
+  });
+
+  watch(history, (newHistory) => {
+    localStorage.setItem('mermaid_history', JSON.stringify(newHistory));
+  }, { deep: true });
 
   // 获取支持的格式
   async function fetchFormats() {
@@ -72,7 +138,8 @@ export const useMermaidStore = defineStore('mermaid', () => {
         dpi: validDpi,
         theme: theme.value,
         background: background.value,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        url
       });
 
       return url;
@@ -84,51 +151,10 @@ export const useMermaidStore = defineStore('mermaid', () => {
     }
   }
 
-  // 上传文件
-  async function upload(file: File) {
-    isLoading.value = true;
-    error.value = null;
-
-    try {
-      // 确保 DPI 值在有效范围内
-      const validDpi = Math.min(Math.max(dpi.value, dpiRange.value.min), dpiRange.value.max);
-      const blob = await api.upload(
-        file, 
-        format.value,
-        validDpi,
-        theme.value,
-        background.value
-      );
-      
-      const url = URL.createObjectURL(blob);
-      
-      const fileReader = new FileReader();
-      fileReader.onload = (e) => {
-        code.value = e.target?.result as string;
-      };
-      fileReader.readAsText(file);
-
-      history.value.unshift({
-        code: code.value,
-        format: format.value,
-        dpi: validDpi,
-        theme: theme.value,
-        background: background.value,
-        timestamp: Date.now()
-      });
-
-      return url;
-    } catch (err) {
-      error.value = 'Failed to upload file';
-      console.error(err);
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
   // 清除历史记录
   function clearHistory() {
     history.value = [];
+    localStorage.removeItem('mermaid_history');
   }
 
   // 从历史记录中加载
@@ -154,7 +180,6 @@ export const useMermaidStore = defineStore('mermaid', () => {
     supportedBackgrounds,
     dpiRange,
     convert,
-    upload,
     clearHistory,
     loadFromHistory,
     fetchFormats
