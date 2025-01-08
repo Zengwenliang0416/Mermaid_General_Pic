@@ -13,7 +13,7 @@ export interface ConversionHistory {
 }
 
 // Load initial state from localStorage
-const loadState = () => {
+const loadState = async () => {
   try {
     const savedCode = localStorage.getItem('mermaid_code') || '';
     const savedFormat = localStorage.getItem('mermaid_format') || 'png';
@@ -21,6 +21,25 @@ const loadState = () => {
     const savedTheme = localStorage.getItem('mermaid_theme') || 'default';
     const savedBackground = localStorage.getItem('mermaid_background') || 'white';
     const savedHistory = JSON.parse(localStorage.getItem('mermaid_history') || '[]');
+
+    // 重新生成历史记录中的图片 URL
+    const processedHistory = await Promise.all(
+      savedHistory.map(async (item: ConversionHistory) => {
+        try {
+          const blob = await api.convert(
+            item.code,
+            item.format,
+            item.dpi,
+            item.theme,
+            item.background
+          );
+          item.url = URL.createObjectURL(blob);
+        } catch (error) {
+          console.error('Failed to regenerate image URL for history item:', error);
+        }
+        return item;
+      })
+    );
     
     return {
       savedCode,
@@ -28,7 +47,7 @@ const loadState = () => {
       savedDpi,
       savedTheme,
       savedBackground,
-      savedHistory
+      savedHistory: processedHistory
     };
   } catch (error) {
     console.error('Failed to load state from localStorage:', error);
@@ -43,22 +62,13 @@ const loadState = () => {
   }
 };
 
-const {
-  savedCode,
-  savedFormat,
-  savedDpi,
-  savedTheme,
-  savedBackground,
-  savedHistory
-} = loadState();
-
 export const useMermaidStore = defineStore('mermaid', () => {
-  const code = ref(savedCode);
-  const format = ref(savedFormat);
-  const dpi = ref(savedDpi);
-  const theme = ref(savedTheme);
-  const background = ref(savedBackground);
-  const history = ref<ConversionHistory[]>(savedHistory);
+  const code = ref('');
+  const format = ref('png');
+  const dpi = ref(300);
+  const theme = ref('default');
+  const background = ref('white');
+  const history = ref<ConversionHistory[]>([]);
   const isLoading = ref(false);
   const error = ref<string | null>(null);
   const supportedFormats = ref<string[]>([]);
@@ -69,6 +79,25 @@ export const useMermaidStore = defineStore('mermaid', () => {
     max: 600,
     default: 300
   });
+
+  // 初始化 store
+  async function initializeStore() {
+    const {
+      savedCode,
+      savedFormat,
+      savedDpi,
+      savedTheme,
+      savedBackground,
+      savedHistory
+    } = await loadState();
+
+    code.value = savedCode;
+    format.value = savedFormat;
+    dpi.value = savedDpi;
+    theme.value = savedTheme;
+    background.value = savedBackground;
+    history.value = savedHistory;
+  }
 
   // Watch for changes and save to localStorage
   watch(code, (newCode) => {
@@ -92,7 +121,9 @@ export const useMermaidStore = defineStore('mermaid', () => {
   });
 
   watch(history, (newHistory) => {
-    localStorage.setItem('mermaid_history', JSON.stringify(newHistory));
+    // 只保存必要的数据到 localStorage，不保存 URL
+    const historyToSave = newHistory.map(({ url, ...rest }) => rest);
+    localStorage.setItem('mermaid_history', JSON.stringify(historyToSave));
   }, { deep: true });
 
   // 获取支持的格式
@@ -153,6 +184,12 @@ export const useMermaidStore = defineStore('mermaid', () => {
 
   // 清除历史记录
   function clearHistory() {
+    // 清理所有的 URL 对象
+    history.value.forEach(item => {
+      if (item.url) {
+        URL.revokeObjectURL(item.url);
+      }
+    });
     history.value = [];
     localStorage.removeItem('mermaid_history');
   }
@@ -182,6 +219,7 @@ export const useMermaidStore = defineStore('mermaid', () => {
     convert,
     clearHistory,
     loadFromHistory,
-    fetchFormats
+    fetchFormats,
+    initializeStore
   };
 }); 

@@ -50,10 +50,19 @@
                       <span>{{ t('preview.title') }}</span>
                     </div>
                     <el-image
-                      :src="`${config.apiBaseUrl}${item.url}`"
+                      :src="item.url"
                       fit="contain"
                       class="preview-image"
-                      :preview-src-list="[`${config.apiBaseUrl}${item.url}`]"
+                      :preview-src-list="[item.url]"
+                      :initial-index="0"
+                      preview-teleported
+                      :preview-options="{
+                        zoom: 1.5,
+                        zoomRate: 1.2,
+                        defaultFullScreen: false,
+                        closeOnPressEscape: true,
+                        teleported: true
+                      }"
                       hide-on-click-modal
                     >
                       <template #placeholder>
@@ -133,10 +142,25 @@ import {
   RefreshRight
 } from '@element-plus/icons-vue';
 import { config } from '../config/config';
+import { onMounted, onUnmounted } from 'vue';
 
 const { t } = useI18n();
 const router = useRouter();
 const store = useMermaidStore();
+
+// 初始化
+onMounted(async () => {
+  await store.initializeStore();
+});
+
+// 清理 URL 对象
+onUnmounted(() => {
+  store.history.forEach(item => {
+    if (item.url) {
+      URL.revokeObjectURL(item.url);
+    }
+  });
+});
 
 // 格式化日期
 const formatDate = (timestamp: number) => {
@@ -360,6 +384,92 @@ const handleDownload = async (item: ConversionHistory) => {
 
 :deep(.el-tag) {
   border-radius: 4px;
+}
+
+:deep(.el-image-viewer__wrapper) {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2000;
+}
+
+:deep(.el-image-viewer__mask) {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  opacity: 0.7;
+  background: #000;
+}
+
+:deep(.el-image-viewer__actions) {
+  opacity: 0.9;
+  padding: 20px;
+}
+
+:deep(.el-image-viewer__actions__inner) {
+  border-radius: 20px;
+  padding: 8px 16px;
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+:deep(.el-image-viewer__btn) {
+  color: #fff;
+  opacity: 0.8;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+:deep(.el-image-viewer__btn:hover) {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+:deep(.el-image-viewer__close) {
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.7);
+  font-size: 24px;
+  opacity: 0.8;
+  transition: all 0.3s;
+}
+
+:deep(.el-image-viewer__close:hover) {
+  opacity: 1;
+  transform: rotate(90deg);
+  background-color: rgba(0, 0, 0, 0.9);
+}
+
+:deep(.el-image-viewer__canvas) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+:deep(.el-image-viewer__img) {
+  max-width: 100%;
+  max-height: 100%;
+  user-select: none;
+  -webkit-user-drag: none;
+  cursor: grab;
+}
+
+:deep(.el-image-viewer__img:active) {
+  cursor: grabbing;
+}
+
+:deep(.el-image-viewer__prev),
+:deep(.el-image-viewer__next) {
+  display: none;
 }
 
 @media (max-width: 768px) {
