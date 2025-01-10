@@ -86,7 +86,8 @@
     "generation_error": "Failed to generate",
     "new_conversation_success": "Started a new conversation",
     "prompt_required": "Please enter your description",
-    "api_key_required": "Please enter API key"
+    "api_key_required": "Please enter API key",
+    "empty_chat": "Start a conversation with AI assistant"
   },
   "nav": {
     "home": "Home",

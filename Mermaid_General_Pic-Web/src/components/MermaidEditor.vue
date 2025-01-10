@@ -11,23 +11,17 @@
                 <span>{{ t('editor.title') }}</span>
               </div>
               <div class="header-actions">
-                <el-tooltip
-                  :content="t('editor.upload_tooltip')"
-                  placement="bottom"
-                  :show-after="300"
+                <el-upload
+                  class="upload-btn"
+                  :show-file-list="false"
+                  accept=".txt,.mmd"
+                  :before-upload="handleUpload"
                 >
-                  <el-upload
-                    class="upload-btn"
-                    :show-file-list="false"
-                    accept=".txt,.mmd"
-                    :before-upload="handleUpload"
-                  >
-                    <el-button type="primary" size="small">
-                      <el-icon><Upload /></el-icon>
-                      <span class="button-text">{{ t('editor.upload') }}</span>
-                    </el-button>
-                  </el-upload>
-                </el-tooltip>
+                  <el-button type="primary" size="small" class="action-button">
+                    <el-icon><Upload /></el-icon>
+                    <span class="button-text">{{ t('editor.upload') }}</span>
+                  </el-button>
+                </el-upload>
               </div>
             </div>
           </template>
@@ -46,21 +40,16 @@
             </div>
 
             <div class="editor-footer">
-              <el-tooltip
-                :content="t('editor.convert_tooltip')"
-                placement="top"
-                :show-after="300"
+              <el-button
+                type="primary"
+                :loading="store.isLoading"
+                @click="handleConvert"
+                size="small"
+                class="action-button"
               >
-                <el-button
-                  type="primary"
-                  :loading="store.isLoading"
-                  @click="handleConvert"
-                  size="small"
-                >
-                  <el-icon><Refresh /></el-icon>
-                  <span class="button-text">{{ t('editor.convert') }}</span>
-                </el-button>
-              </el-tooltip>
+                <el-icon><Refresh /></el-icon>
+                <span class="button-text">{{ t('editor.convert') }}</span>
+              </el-button>
             </div>
           </div>
 

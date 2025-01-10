@@ -84,7 +84,6 @@
             plain
             @click="handleNewConversation"
             :disabled="isGenerating"
-            :title="t('ai.new_conversation_tooltip')"
           >
             <el-icon><Plus /></el-icon>
           </el-button>
@@ -94,7 +93,6 @@
             type="primary"
             :loading="isGenerating"
             @click="handleGenerate"
-            :title="t('ai.generate_tooltip')"
           >
             <el-icon><Promotion /></el-icon>
             <span class="button-text">{{ t('ai.generate') }}</span>

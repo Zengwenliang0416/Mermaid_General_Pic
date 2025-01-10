@@ -43,7 +43,8 @@
     "api_key_placeholder": "请输入 API 密钥",
     "api_key_required": "请先配置 API 密钥",
     "kimi_model": "Kimi 模型版本",
-    "kimi_model_placeholder": "选择 Kimi 模型版本"
+    "kimi_model_placeholder": "选择 Kimi 模型版本",
+    "empty_chat": "开始与 AI 助手对话"
   },
   "download": {
     "title": "下载设置",
