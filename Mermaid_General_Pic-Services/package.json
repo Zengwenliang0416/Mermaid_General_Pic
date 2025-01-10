@@ -15,7 +15,7 @@
   "description": "Mermaid code to image conversion service",
   "dependencies": {
     "@mermaid-js/mermaid-cli": "^11.4.2",
-    "@types/axios": "^0.14.4",
+    "@types/node": "^22.10.5",
     "axios": "^1.7.9",
     "chalk": "4",
     "cors": "^2.8.5",

@@ -11,9 +11,9 @@ importers:
       '@mermaid-js/mermaid-cli':
         specifier: ^11.4.2
         version: 11.4.2(puppeteer@23.11.1(typescript@5.7.2))(ts-node@10.9.2(@types/node@22.10.5)(typescript@5.7.2))(typescript@5.7.2)
-      '@types/axios':
-        specifier: ^0.14.4
-        version: 0.14.4
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.10.5
       axios:
         specifier: ^1.7.9
         version: 1.7.9
@@ -251,10 +251,6 @@ packages:
 
   '@types/assert@1.5.11':
     resolution: {integrity: sha512-FjS1mxq2dlGr9N4z72/DO+XmyRS3ZZIoVn998MEopAN/OmyN28F4yumRL5pOw2z+hbFLuWGYuF2rrw5p11xM5A==}
-
-  '@types/axios@0.14.4':
-    resolution: {integrity: sha512-9JgOaunvQdsQ/qW2OPmE5+hCeUB52lQSolecrFrthct55QekhmXEwT203s20RL+UHtCQc15y3VXpby9E7Kkh/g==}
-    deprecated: This is a stub types definition. axios provides its own type definitions, so you do not need this installed.
 
   '@types/body-parser@1.19.5':
     resolution: {integrity: sha512-fB3Zu92ucau0iQ0JMCFQE7b/dv8Ot07NI3KaZIkIUNXq82k4eBAqUaneXfleGY9JWskeS9y+u0nXMyspcuQrCg==}
@@ -2340,12 +2336,6 @@ snapshots:
   '@tsconfig/node16@1.0.4': {}
 
   '@types/assert@1.5.11': {}
-
-  '@types/axios@0.14.4':
-    dependencies:
-      axios: 1.7.9
-    transitivePeerDependencies:
-      - debug
 
   '@types/body-parser@1.19.5':
     dependencies:
