@@ -187,6 +187,7 @@ const zoomLevel = ref(1);
 const zoomPercent = ref(100);
 const aiPrompt = ref('');
 const isGenerating = ref(false);
+const conversationId = ref<string>('');
 
 // 初始化
 onMounted(async () => {
@@ -258,10 +259,12 @@ const handleGenerate = async () => {
 
   try {
     const response = await api.generateFromAi(aiPrompt.value, {
-      model: 'kimi'
+      model: 'kimi',
+      conversationId: conversationId.value
     });
     
     store.code = response.code;
+    conversationId.value = response.conversationId; // 保存对话ID
     await handleConvert();
     
     ElMessage.success(t('ai.generation_success'));

@@ -3,10 +3,12 @@ import { config } from '../config/config';
 
 interface GenerateAiResponse {
   code: string;
+  conversationId: string;
 }
 
 interface GenerateAiSettings {
   model: string;
+  conversationId?: string;
 }
 
 export const api = {
@@ -43,7 +45,8 @@ export const api = {
       `${config.apiBaseUrl}/api/kimi/generate`,
       {
         prompt,
-        model: settings.model
+        model: settings.model,
+        conversationId: settings.conversationId
       }
     );
     return response.data;
