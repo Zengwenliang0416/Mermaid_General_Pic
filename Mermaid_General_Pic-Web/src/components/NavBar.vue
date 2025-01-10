@@ -29,36 +29,27 @@
       </div>
 
       <div class="nav-right">
-        <!-- 主题切换按钮 -->
-        <el-tooltip
-          :content="isDark ? '切换到浅色模式' : '切换到深色模式'"
-          placement="bottom"
-          :show-after="300"
-        >
-          <button 
-            class="theme-switch" 
-            @click="() => toggleTheme()"
-          >
-            <el-icon v-if="isDark"><Sunny /></el-icon>
-            <el-icon v-else><Moon /></el-icon>
-          </button>
-        </el-tooltip>
-
-        <!-- 帮助按钮 -->
-        <el-tooltip
-          content="查看帮助文档"
-          placement="bottom"
-          :show-after="300"
-        >
-          <el-button
-            class="help-button"
-            type="primary"
-            link
-            @click="showHelp"
-          >
-            <el-icon><QuestionFilled /></el-icon>
+        <el-dropdown @command="handleLanguageChange">
+          <el-button type="primary" text>
+            <el-icon><Monitor /></el-icon>
+            <span>{{ t('nav.language') }}</span>
           </el-button>
-        </el-tooltip>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item command="en">{{ t('nav.switch_to_en') }}</el-dropdown-item>
+              <el-dropdown-item command="zh">{{ t('nav.switch_to_zh') }}</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+
+        <el-button
+          type="primary"
+          text
+          @click="helpDialogVisible = true"
+        >
+          <el-icon><QuestionFilled /></el-icon>
+          <span>{{ t('nav.help') }}</span>
+        </el-button>
       </div>
     </div>
 
@@ -121,24 +112,31 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs';
+import en from 'element-plus/dist/locale/en.mjs';
+import { elementLocale } from '../main';
 import {
   HomeFilled,
   Timer,
   Connection,
-  Sunny,
-  Moon,
-  QuestionFilled
+  QuestionFilled,
+  Monitor
 } from '@element-plus/icons-vue';
-import { useI18n } from 'vue-i18n';
-import { useDark, useToggle } from '@vueuse/core';
 
-const { t } = useI18n();
-const isDark = useDark();
-const toggleTheme = useToggle(isDark);
+const router = useRouter();
+const { t, locale } = useI18n();
 const helpDialogVisible = ref(false);
 
-const showHelp = () => {
-  helpDialogVisible.value = true;
+// 处理语言切换
+const handleLanguageChange = (lang: string) => {
+  // 更新 vue-i18n 的语言设置
+  locale.value = lang;
+  // 更新 Element Plus 的语言设置
+  elementLocale.value = lang === 'zh' ? zhCn : en;
+  // 保存语言设置
+  localStorage.setItem('locale', lang);
 };
 </script>
 
@@ -172,7 +170,8 @@ const showHelp = () => {
 .nav-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+  margin-left: auto;
 }
 
 .logo-link {
@@ -377,6 +376,10 @@ kbd {
 
   .nav-item-text {
     display: none;
+  }
+
+  .nav-right {
+    gap: 8px;
   }
 }
 

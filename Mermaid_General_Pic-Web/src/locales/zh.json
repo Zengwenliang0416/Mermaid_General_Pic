@@ -12,7 +12,10 @@
   },
   "nav": {
     "home": "首页",
-    "help": "帮助"
+    "help": "帮助",
+    "language": "语言",
+    "switch_to_en": "切换到英文",
+    "switch_to_zh": "切换到中文"
   },
   "editor": {
     "title": "Mermaid 编辑器",
