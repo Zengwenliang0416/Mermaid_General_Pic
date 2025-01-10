@@ -119,19 +119,16 @@
               <template #placeholder>
                 <div class="image-placeholder">
                   <el-icon><Loading /></el-icon>
-                  <span>{{ t('preview.loading') }}</span>
                 </div>
               </template>
               <template #error>
                 <div class="image-error">
                   <el-icon><PictureFilled /></el-icon>
-                  <span>{{ t('preview.error') }}</span>
                 </div>
               </template>
             </el-image>
             <div v-else class="empty-preview">
               <el-icon><Picture /></el-icon>
-              <span>{{ t('preview.empty') }}</span>
             </div>
           </div>
         </el-card>
@@ -253,48 +250,64 @@ defineExpose({
 .editor-card,
 .preview-card {
   height: 100%;
-  border-radius: 12px;
-  transition: all 0.3s ease;
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid var(--el-border-color-light);
+  backdrop-filter: blur(8px);
+  background-color: rgba(var(--el-bg-color-rgb), 0.8);
 }
 
 .editor-card:hover,
 .preview-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-color: var(--el-color-primary-light-7);
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--el-border-color-light);
+  background-color: rgba(var(--el-bg-color-rgb), 0.6);
+  backdrop-filter: blur(8px);
+  border-radius: 16px 16px 0 0;
 }
 
 .header-title {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 16px;
+  gap: 10px;
+  font-size: 18px;
   font-weight: 600;
   color: var(--el-text-color-primary);
+  letter-spacing: -0.5px;
 }
 
 .header-title .el-icon {
-  font-size: 18px;
+  font-size: 20px;
   color: var(--el-color-primary);
+  transition: transform 0.3s ease;
+}
+
+.editor-card:hover .header-title .el-icon,
+.preview-card:hover .header-title .el-icon {
+  transform: scale(1.1);
 }
 
 .header-actions,
 .preview-controls {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 .editor-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
+  padding: 20px;
 }
 
 .editor-main {
@@ -305,81 +318,156 @@ defineExpose({
   font-family: 'Fira Code', monospace;
   font-size: 14px;
   line-height: 1.6;
-  padding: 16px;
-  border-radius: 8px;
+  padding: 20px;
+  border-radius: 12px;
   background-color: var(--el-bg-color-page);
   transition: all 0.3s ease;
   resize: none;
+  border: 1px solid var(--el-border-color-light);
+}
+
+:deep(.el-textarea__inner:hover) {
+  border-color: var(--el-border-color-hover);
 }
 
 :deep(.el-textarea__inner:focus) {
+  border-color: var(--el-color-primary);
   box-shadow: 0 0 0 2px var(--el-color-primary-light-8);
 }
 
 .editor-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  padding-top: 16px;
+  gap: 16px;
+  padding-top: 20px;
   border-top: 1px solid var(--el-border-color-light);
 }
 
 .error-alert {
-  margin-top: 16px;
-  border-radius: 8px;
+  margin: 0 20px 20px;
+  border-radius: 12px;
 }
 
 .preview-container {
   position: relative;
   min-height: 400px;
+  max-height: 600px;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   background-color: var(--el-bg-color-page);
-  border-radius: 8px;
-  overflow: hidden;
+  border-radius: 12px;
+  overflow: auto;
+  padding: 20px;
+  margin: 20px;
+  border: 1px solid var(--el-border-color-light);
+  transition: all 0.3s ease;
+}
+
+.preview-container:hover {
+  border-color: var(--el-border-color-hover);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .preview-image {
   max-width: 100%;
-  transition: transform 0.3s ease;
+  height: auto;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+:deep(.el-image) {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+:deep(.el-image__inner) {
+  object-fit: contain;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
 }
 
 .image-placeholder,
 .image-error,
 .empty-preview {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
   color: var(--el-text-color-secondary);
+  background: linear-gradient(135deg, var(--el-bg-color) 0%, var(--el-bg-color-page) 100%);
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .image-placeholder .el-icon,
 .image-error .el-icon,
 .empty-preview .el-icon {
-  font-size: 48px;
-  opacity: 0.5;
+  font-size: 32px;
+  opacity: 0.4;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--el-text-color-secondary);
+}
+
+.image-placeholder:hover .el-icon,
+.image-error:hover .el-icon,
+.empty-preview:hover .el-icon {
+  opacity: 0.6;
+  transform: scale(1.1);
 }
 
 :deep(.el-upload) {
   width: auto;
 }
 
-:deep(.el-button) {
+.action-button {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.action-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(var(--el-color-primary-rgb), 0.2);
+}
+
+.action-button .el-icon {
+  font-size: 16px;
+  transition: transform 0.3s ease;
+}
+
+.action-button:hover .el-icon {
+  transform: scale(1.1);
 }
 
 :deep(.el-input-number) {
   width: 120px;
 }
 
+:deep(.el-input-number .el-input__wrapper) {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+:deep(.el-input-number:hover .el-input__wrapper) {
+  box-shadow: 0 0 0 1px var(--el-color-primary-light-7);
+}
+
 :deep(.el-input-number__decrease),
 :deep(.el-input-number__increase) {
   border-radius: 4px;
   transition: all 0.3s ease;
+  background-color: var(--el-bg-color-page);
 }
 
 :deep(.el-input-number__decrease:hover),
@@ -410,19 +498,30 @@ defineExpose({
 
   .preview-container {
     min-height: 300px;
+    padding: 16px;
+    margin: 16px;
   }
 
   .header-title {
-    font-size: 14px;
+    font-size: 16px;
   }
 
   .header-title .el-icon {
-    font-size: 16px;
+    font-size: 18px;
   }
 
   :deep(.el-textarea__inner) {
     font-size: 13px;
-    padding: 12px;
+    padding: 16px;
+  }
+
+  .editor-container {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .card-header {
+    padding: 12px 16px;
   }
 }
 </style> 
