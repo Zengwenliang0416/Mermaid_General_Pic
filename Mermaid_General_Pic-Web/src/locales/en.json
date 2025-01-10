@@ -1,0 +1,71 @@
+{
+  "common": {
+    "cancel": "Cancel",
+    "download": "Download",
+    "error": "Error",
+    "success": "Success",
+    "clear": "Clear",
+    "load": "Load"
+  },
+  "editor": {
+    "title": "Mermaid Editor",
+    "upload": "Upload",
+    "placeholder": "Enter your Mermaid code here...",
+    "convert": "Convert",
+    "theme": "Theme",
+    "background": "Background",
+    "format": "Format",
+    "dpi": "DPI",
+    "dpi_tooltip": "Image resolution (DPI)"
+  },
+  "download": {
+    "title": "Download Settings",
+    "filename": "Filename",
+    "filename_placeholder": "Enter filename",
+    "format": "Format",
+    "format_placeholder": "Select format",
+    "dpi": "Resolution (DPI)",
+    "theme": "Theme",
+    "theme_placeholder": "Select theme",
+    "background": "Background",
+    "background_placeholder": "Select background",
+    "success": "Download started",
+    "error": "Failed to download"
+  },
+  "preview": {
+    "title": "Preview",
+    "empty": "No preview available",
+    "download": "Download",
+    "error": "Failed to load image",
+    "loading": "Loading image...",
+    "zoom_in": "Zoom in",
+    "zoom_out": "Zoom out"
+  },
+  "history": {
+    "title": "Conversion History",
+    "empty": "No conversion history",
+    "clear": "Clear History",
+    "clear_confirm": "Are you sure you want to clear all conversion history?",
+    "clear_success": "History cleared successfully",
+    "clear_error": "Failed to clear history",
+    "load_success": "Code loaded successfully",
+    "load_error": "Failed to load code",
+    "time": "Time",
+    "code": "Code",
+    "actions": "Actions",
+    "today": "Today at {time}",
+    "yesterday": "Yesterday at {time}",
+    "load_tooltip": "Load this code into editor",
+    "download_tooltip": "Download this image"
+  },
+  "theme": {
+    "default": "Default",
+    "dark": "Dark",
+    "forest": "Forest",
+    "neutral": "Neutral"
+  },
+  "background": {
+    "transparent": "Transparent",
+    "white": "White"
+  }
+} 

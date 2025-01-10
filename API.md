@@ -1,205 +1,135 @@
-# API 文档
+# Mermaid General Pic API 文档
 
-## 基础信息
+## 基本信息
 
-- 基础 URL: `http://localhost:8000`
+- 基础URL: `http://localhost:8000`
 - 所有请求和响应均使用 JSON 格式
-- 所有响应都包含适当的 HTTP 状态码
+- 所有时间戳使用 ISO 8601 格式
 
-## 端点说明
+## API 端点
 
-### 获取支持的格式
+### 1. 获取支持的格式信息
 
-获取支持的输出格式、DPI 范围、主题和背景选项。
+获取服务支持的所有图片格式、主题、背景和DPI范围。
 
-```http
-GET /api/formats
-```
+**请求**
+- 方法: `GET`
+- 路径: `/api/formats`
 
-#### 响应
-
+**响应**
 ```json
 {
-  "formats": ["png", "jpg", "svg"],
-  "dpi": {
-    "min": 72,
-    "max": 600,
+  "formats": [
+    "png",
+    "jpg",
+    "svg"
+  ],
+  "themes": [
+    "default",
+    "dark",
+    "forest",
+    "neutral"
+  ],
+  "backgrounds": [
+    "transparent",
+    "white"
+  ],
+  "dpiRange": {
+    "min": 300,
+    "max": 1200,
     "default": 300
-  },
-  "themes": ["default", "dark", "forest", "neutral"],
-  "backgrounds": ["transparent", "white"]
+  }
 }
 ```
 
-### 转换 Mermaid 代码
+### 2. 获取队列状态
 
-将 Mermaid 代码转换为图片。
+获取当前处理队列的状态信息。
 
-```http
-POST /api/convert
-Content-Type: application/json
-```
+**请求**
+- 方法: `GET`
+- 路径: `/api/status`
 
-#### 请求体
-
+**响应**
 ```json
 {
-  "code": "graph TD;A-->B;",
-  "format": "png",
-  "dpi": 300,
-  "theme": "default",
-  "background": "transparent"
+  "queue": {
+    "waiting": 0,    // 等待处理的任务数
+    "processing": 0  // 正在处理的任务数
+  }
 }
 ```
 
-| 字段 | 类型 | 必填 | 描述 |
-|------|------|------|------|
-| code | string | 是 | Mermaid 图表代码 |
-| format | string | 是 | 输出格式（png/jpg/svg） |
-| dpi | number | 否 | 图片分辨率（72-600） |
-| theme | string | 否 | 主题样式 |
-| background | string | 否 | 背景类型 |
+### 3. 转换 Mermaid 代码为图片
 
-#### 响应
+将 Mermaid 图表代码转换为指定格式的图片。
 
+**请求**
+- 方法: `POST`
+- 路径: `/api/convert`
+- Content-Type: `application/json`
+
+**请求体参数**
 ```json
 {
-  "url": "/images/abc123.png",
-  "format": "png"
+  "code": "graph TD\nA[开始] --> B[结束]",  // Mermaid 图表代码
+  "format": "png",                         // 输出格式：png、jpg 或 svg
+  "dpi": 300,                             // 图片DPI值 (300-1200)
+  "theme": "default",                     // 主题：default、dark、forest 或 neutral
+  "background": "transparent",            // 背景：transparent 或 white
+  "filename": "diagram-name"              // 可选：输出文件名
 }
 ```
 
-### 上传文件转换
+**响应**
+- Content-Type: `image/{format}` (format 为请求的输出格式)
+- Content-Disposition: `attachment; filename="{filename}.{format}"`
+- 响应体: 二进制图片数据
 
-上传包含 Mermaid 代码的文件并转换为图片。
-
-```http
-POST /api/upload
-Content-Type: multipart/form-data
-```
-
-#### 请求参数
-
-| 字段 | 类型 | 必填 | 描述 |
-|------|------|------|------|
-| file | file | 是 | Mermaid 文件（.txt/.mmd） |
-| format | string | 是 | 输出格式 |
-| dpi | number | 否 | 图片分辨率 |
-| theme | string | 否 | 主题样式 |
-| background | string | 否 | 背景类型 |
-
-#### 响应
-
+**错误响应**
 ```json
 {
-  "url": "/images/abc123.png",
-  "format": "png"
+  "error": "错误信息"
 }
 ```
-
-### 获取生成的图片
-
-获取已生成的图片文件。
-
-```http
-GET /images/:filename
-```
-
-#### 参数
-
-| 参数 | 类型 | 描述 |
-|------|------|------|
-| filename | string | 图片文件名 |
-
-#### 响应
-
-返回图片文件的二进制数据。
 
 ## 错误处理
 
-所有错误响应都遵循以下格式：
+所有接口在发生错误时都会返回相应的 HTTP 状态码和错误信息：
 
-```json
-{
-  "error": "错误描述信息"
-}
-```
+- 400 Bad Request: 请求参数错误
+- 500 Internal Server Error: 服务器内部错误
 
-### HTTP 状态码
+## 性能说明
 
-- 200: 请求成功
-- 400: 请求参数错误
-- 404: 资源不存在
-- 415: 不支持的媒体类型
-- 500: 服务器内部错误
+1. 图片生成过程是异步的，通过队列管理
+2. 生成的图片会被缓存，相同的请求会直接返回缓存结果
+3. 大型图表可能需要更长的处理时间
 
-### 常见错误
-
-1. 无效的 Mermaid 代码
-```json
-{
-  "error": "Invalid Mermaid syntax"
-}
-```
-
-2. 不支持的输出格式
-```json
-{
-  "error": "Unsupported output format"
-}
-```
-
-3. 文件大小超限
-```json
-{
-  "error": "File size exceeds limit (1MB)"
-}
-```
-
-## 示例
+## 使用示例
 
 ### cURL 示例
 
-1. 获取支持的格式
+1. 获取支持的格式：
 ```bash
-curl http://localhost:8000/api/formats
+curl http://localhost:8000/api/formats | jq
 ```
 
-2. 转换 Mermaid 代码
+2. 获取队列状态：
+```bash
+curl http://localhost:8000/api/status | jq
+```
+
+3. 转换图表为图片：
 ```bash
 curl -X POST http://localhost:8000/api/convert \
   -H "Content-Type: application/json" \
   -d '{
-    "code": "graph TD;A-->B;",
+    "code": "graph TD\nA[开始] --> B[结束]",
     "format": "png",
     "dpi": 300,
     "theme": "default",
-    "background": "transparent"
-  }'
-```
-
-3. 上传文件
-```bash
-curl -X POST http://localhost:8000/api/upload \
-  -F "file=@diagram.mmd" \
-  -F "format=png" \
-  -F "dpi=300" \
-  -F "theme=default" \
-  -F "background=transparent"
-```
-
-## 限制说明
-
-- 最大文件大小：1MB
-- 支持的文件类型：.txt, .mmd
-- DPI 范围：72-600
-- 图片保存时间：24小时
-- 并发请求限制：每分钟 60 次
-
-## 安全说明
-
-- 所有上传的文件都会进行安全检查
-- 生成的图片使用随机文件名
-- 定期清理过期文件
-- 限制并发请求数量
-- 验证所有输入参数 
+    "background": "transparent",
+    "filename": "test-diagram"
+  }' --output diagram.png
+``` 
