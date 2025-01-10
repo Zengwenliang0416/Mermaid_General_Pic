@@ -4,6 +4,7 @@ import { config } from './config/config';
 import { loggingMiddleware } from './utils/logging-middleware';
 import { logSystemEvent } from './utils/logger';
 import mermaidRoutes from './routes/mermaid.routes';
+import kimiRoutes from './routes/kimi.routes';
 import { MermaidService } from './services/mermaid.service';
 
 const app = express();
@@ -17,13 +18,33 @@ app.use(express.static('public'));
 app.use(loggingMiddleware);
 
 // 路由
-app.use('/api', mermaidRoutes);
+app.use('/api/mermaid', mermaidRoutes);
+app.use('/api/kimi', kimiRoutes);
 
 // 静态文件服务
 app.use('/static', express.static(config.imagesDir));
 
+// 404 处理
+app.use((req, res) => {
+  logSystemEvent('404 Not Found', {
+    method: req.method,
+    url: req.url,
+    headers: req.headers,
+    body: req.body
+  });
+  res.status(404).json({ error: 'Not Found' });
+});
+
 // 错误处理中间件
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  logSystemEvent('Server Error', {
+    error: err.message,
+    stack: err.stack,
+    method: req.method,
+    url: req.url,
+    headers: req.headers,
+    body: req.body
+  });
   res.status(500).json({ error: err.message || 'Internal Server Error' });
 });
 
@@ -32,7 +53,11 @@ const server = app.listen(config.port, () => {
   logSystemEvent('Server started', {
     port: config.port,
     env: process.env.NODE_ENV,
-    nodeVersion: process.version
+    nodeVersion: process.version,
+    config: {
+      ...config,
+      kimiApiKey: config.kimiApiKey ? '***' : 'not set'
+    }
   });
 });
 

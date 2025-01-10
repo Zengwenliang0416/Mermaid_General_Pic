@@ -16,5 +16,6 @@ export const config = {
     default: 300
   },
   themes: ['default', 'dark', 'forest', 'neutral'] as const,
-  backgrounds: ['transparent', 'white'] as const
+  backgrounds: ['transparent', 'white'] as const,
+  kimiApiKey: process.env.KIMI_API_KEY || ''
 }; 

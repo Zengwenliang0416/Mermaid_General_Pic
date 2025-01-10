@@ -2,6 +2,32 @@
   <div class="home">
     <el-container>
       <el-main>
+        <!-- AI 对话栏 -->
+        <el-row :gutter="20" class="mb-4">
+          <el-col :span="24">
+            <el-card class="ai-card" shadow="hover">
+              <div class="ai-input-container">
+                <el-input
+                  v-model="aiPrompt"
+                  :placeholder="t('ai.placeholder')"
+                  :disabled="isGenerating"
+                  @keyup.enter="handleGenerate"
+                >
+                  <template #append>
+                    <el-button
+                      type="primary"
+                      :loading="isGenerating"
+                      @click="handleGenerate"
+                    >
+                      {{ t('ai.generate') }}
+                    </el-button>
+                  </template>
+                </el-input>
+              </div>
+            </el-card>
+          </el-col>
+        </el-row>
+
         <el-row :gutter="20">
           <!-- 左侧编辑器 -->
           <el-col :span="12">
@@ -151,15 +177,16 @@ import {
 import { useMermaidStore } from '../stores/mermaid';
 import DownloadDialog from '../components/DownloadDialog.vue';
 import { useI18n } from 'vue-i18n';
+import { api } from '../services/api';
+import { ElMessage } from 'element-plus';
 
 const { t } = useI18n();
 const store = useMermaidStore();
 const previewUrl = ref<string>('');
 const zoomLevel = ref(1);
-const ZOOM_STEP = 0.1;
-const MAX_ZOOM = 3;
-const MIN_ZOOM = 0.1;
 const zoomPercent = ref(100);
+const aiPrompt = ref('');
+const isGenerating = ref(false);
 
 // 初始化
 onMounted(async () => {
@@ -184,13 +211,13 @@ const handleConvert = async () => {
   try {
     // 预览时使用更高的 DPI 以获得更清晰的图像
     const previewDpi = Math.max(300, window.devicePixelRatio * 300);
-    const url = await store.convert(store.code, store.format, previewDpi, store.theme, store.background);
-    if (url) {
+    const blob = await api.convert(store.code, store.format, previewDpi, store.theme, store.background);
+    if (blob) {
       // 如果之前有预览 URL，先释放它
       if (previewUrl.value) {
         URL.revokeObjectURL(previewUrl.value);
       }
-      previewUrl.value = url;
+      previewUrl.value = URL.createObjectURL(blob);
       zoomLevel.value = 1;
     }
   } catch (err) {
@@ -201,77 +228,50 @@ const handleConvert = async () => {
 // 处理上传
 const handleUpload = async (file: File) => {
   try {
-    const url = await store.upload(file);
-    if (url) {
-      // 如果之前有预览 URL，先释放它
-      if (previewUrl.value) {
-        URL.revokeObjectURL(previewUrl.value);
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      if (e.target?.result) {
+        store.code = e.target.result.toString();
+        await handleConvert();
       }
-      previewUrl.value = url;
-      zoomLevel.value = 1;
-    }
+    };
+    reader.readAsText(file);
   } catch (err) {
     console.error('Error uploading:', err);
   }
   return false;
 };
 
-// 处理下载
-const handleDownload = async () => {
-  if (store.code) {
-    try {
-      const blob = await api.convert(
-        store.code,
-        store.format,
-        store.dpi,
-        store.theme,
-        store.background
-      );
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `mermaid.${store.format}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error('Download failed:', err);
-    }
-  }
-};
-
-// 处理 DPI 变更
-const handleDpiChange = async () => {
-  if (store.code) {
-    await handleConvert();
-  }
-};
-
-// 处理格式变更
-const handleFormatChange = async () => {
-  if (store.code) {
-    await handleConvert();
-  }
-};
-
-// 处理主题变更
-const handleThemeChange = async () => {
-  if (store.code) {
-    await handleConvert();
-  }
-};
-
-// 处理背景变更
-const handleBackgroundChange = async () => {
-  if (store.code) {
-    await handleConvert();
-  }
-};
-
-// 修改缩放相关的处理函数
+// 处理缩放
 const handleZoomChange = (value: number) => {
   zoomLevel.value = value / 100;
+};
+
+// 处理AI生成
+const handleGenerate = async () => {
+  if (!aiPrompt.value.trim()) {
+    ElMessage.warning(t('ai.prompt_required'));
+    return;
+  }
+
+  isGenerating.value = true;
+
+  try {
+    const response = await api.generateFromAi(aiPrompt.value, {
+      model: 'kimi'
+    });
+    
+    store.code = response.code;
+    await handleConvert();
+    
+    ElMessage.success(t('ai.generation_success'));
+    aiPrompt.value = ''; // 清空输入
+  } catch (error) {
+    console.error('Failed to generate diagram:', error);
+    ElMessage.error(t('ai.generation_error'));
+  } finally {
+    isGenerating.value = false;
+  }
 };
 </script>
 
@@ -280,6 +280,31 @@ const handleZoomChange = (value: number) => {
   padding: 20px;
   background-color: var(--el-bg-color-page);
   min-height: 100vh;
+}
+
+.mb-4 {
+  margin-bottom: 16px;
+}
+
+.ai-card {
+  border-radius: 8px;
+  box-shadow: var(--el-box-shadow-light);
+}
+
+.ai-input-container {
+  display: flex;
+  gap: 12px;
+}
+
+:deep(.el-input-group__append) {
+  padding: 0;
+}
+
+:deep(.el-input-group__append button) {
+  border: none;
+  height: 100%;
+  padding: 0 20px;
+  border-radius: 0 4px 4px 0;
 }
 
 .editor-card,
