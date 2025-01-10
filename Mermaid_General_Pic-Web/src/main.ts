@@ -4,6 +4,7 @@ import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import { createI18n } from 'vue-i18n'
 import zhLocale from './locales/zh.json'
+import router from './router'
 import App from './App.vue'
 
 // 创建 i18n 实例
@@ -23,6 +24,7 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(ElementPlus)
 app.use(i18n)
+app.use(router)
 
 // 挂载应用
 app.mount('#app')

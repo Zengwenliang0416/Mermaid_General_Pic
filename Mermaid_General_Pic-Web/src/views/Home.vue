@@ -1,5 +1,31 @@
 <template>
   <div class="home">
+    <!-- 顶部导航栏 -->
+    <el-header class="header">
+      <div class="nav-container">
+        <div class="nav-left">
+          <h2 class="logo">{{ t('editor.title') }}</h2>
+        </div>
+        <div class="nav-right">
+          <el-menu
+            mode="horizontal"
+            :router="true"
+            :default-active="$route.path"
+            class="nav-menu"
+          >
+            <el-menu-item index="/">
+              <el-icon><HomeFilled /></el-icon>
+              {{ t('nav.home') }}
+            </el-menu-item>
+            <el-menu-item index="/history">
+              <el-icon><Timer /></el-icon>
+              {{ t('history.title') }}
+            </el-menu-item>
+          </el-menu>
+        </div>
+      </div>
+    </el-header>
+
     <el-container>
       <el-main>
         <!-- AI 对话栏 -->
@@ -103,17 +129,19 @@
                     <el-icon><Edit /></el-icon>
                     <span>{{ t('editor.title') }}</span>
                   </div>
-                  <el-upload
-                    class="upload-btn"
-                    :show-file-list="false"
-                    accept=".txt,.mmd"
-                    :before-upload="handleUpload"
-                  >
-                    <el-button type="primary" size="small">
-                      <el-icon><Upload /></el-icon>
-                      {{ t('editor.upload') }}
-                    </el-button>
-                  </el-upload>
+                  <div class="header-actions">
+                    <el-upload
+                      class="upload-btn"
+                      :show-file-list="false"
+                      accept=".txt,.mmd"
+                      :before-upload="handleUpload"
+                    >
+                      <el-button type="primary" size="small">
+                        <el-icon><Upload /></el-icon>
+                        {{ t('editor.upload') }}
+                      </el-button>
+                    </el-upload>
+                  </div>
                 </div>
               </template>
               
@@ -237,7 +265,9 @@ import {
   View,
   Loading,
   PictureFilled,
-  Refresh
+  Refresh,
+  Timer,
+  HomeFilled
 } from '@element-plus/icons-vue';
 import { useMermaidStore } from '../stores/mermaid';
 import { useAiStore } from '../stores/ai';
@@ -246,6 +276,7 @@ import { useI18n } from 'vue-i18n';
 import { api } from '../services/api';
 import { ElMessage } from 'element-plus';
 import { AI_MODELS, KIMI_MODELS, type AiModel, type ChatMessage } from '../types';
+import { useRouter } from 'vue-router';
 
 const { t } = useI18n();
 const store = useMermaidStore();
@@ -261,6 +292,7 @@ const currentApiKey = ref(aiStore.getCurrentApiKey());
 const kimiModel = ref(aiStore.getCurrentKimiModel());
 const kimiModels = KIMI_MODELS;
 const isKimiModel = computed(() => aiStore.settings.selectedModel === AI_MODELS.KIMI);
+const router = useRouter();
 
 // 处理模型变更
 const handleModelChange = (model: AiModel) => {
@@ -291,13 +323,13 @@ const handleCodeChange = () => {
   }
   timer = window.setTimeout(async () => {
     if (store.code) {
-      await handleConvert();
+      await handleConvert(false);
     }
   }, 1000);
 };
 
 // 处理转换
-const handleConvert = async () => {
+const handleConvert = async (addToHistory: boolean = true) => {
   try {
     // 预览时使用更高的 DPI 以获得更清晰的图像
     const previewDpi = Math.max(300, window.devicePixelRatio * 300);
@@ -307,8 +339,27 @@ const handleConvert = async () => {
       if (previewUrl.value) {
         URL.revokeObjectURL(previewUrl.value);
       }
-      previewUrl.value = URL.createObjectURL(blob);
+
+      // 为预览创建一个 URL
+      previewUrl.value = URL.createObjectURL(blob.slice(0));
       zoomLevel.value = 1;
+
+      // 只有在需要添加到历史记录时才创建新的 URL 和添加记录
+      if (addToHistory) {
+        // 为历史记录创建一个独立的 URL（使用 blob 的副本）
+        const historyUrl = URL.createObjectURL(blob.slice(0));
+        
+        // 添加到历史记录
+        store.history.unshift({
+          code: store.code,
+          format: store.format,
+          dpi: previewDpi,
+          theme: store.theme,
+          background: store.background,
+          timestamp: Date.now(),
+          url: historyUrl
+        });
+      }
     }
   } catch (err) {
     console.error('Error converting:', err);
@@ -399,6 +450,11 @@ const handleGenerate = async () => {
   } finally {
     isGenerating.value = false;
   }
+};
+
+// 处理查看历史
+const handleViewHistory = () => {
+  router.push('/history');
 };
 </script>
 
@@ -704,5 +760,72 @@ const handleGenerate = async () => {
 
 .model-version-select {
   width: 180px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.header {
+  background-color: var(--el-bg-color);
+  border-bottom: 1px solid var(--el-border-color-light);
+  padding: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  height: 60px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.logo {
+  margin: 0;
+  font-size: 20px;
+  color: var(--el-text-color-primary);
+}
+
+.nav-menu {
+  background-color: transparent;
+  border-bottom: none;
+}
+
+:deep(.el-menu--horizontal) {
+  border-bottom: none;
+}
+
+:deep(.el-menu-item) {
+  font-size: 16px;
+  height: 60px;
+  line-height: 60px;
+  padding: 0 20px;
+}
+
+:deep(.el-menu-item.is-active) {
+  font-weight: 600;
+}
+
+:deep(.el-menu-item .el-icon) {
+  margin-right: 4px;
+  font-size: 18px;
 }
 </style> 

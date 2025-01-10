@@ -1,5 +1,31 @@
 <template>
   <div class="history">
+    <!-- 顶部导航栏 -->
+    <el-header class="header">
+      <div class="nav-container">
+        <div class="nav-left">
+          <h2 class="logo">{{ t('editor.title') }}</h2>
+        </div>
+        <div class="nav-right">
+          <el-menu
+            mode="horizontal"
+            :router="true"
+            :default-active="$route.path"
+            class="nav-menu"
+          >
+            <el-menu-item index="/">
+              <el-icon><HomeFilled /></el-icon>
+              {{ t('nav.home') }}
+            </el-menu-item>
+            <el-menu-item index="/history">
+              <el-icon><Timer /></el-icon>
+              {{ t('history.title') }}
+            </el-menu-item>
+          </el-menu>
+        </div>
+      </div>
+    </el-header>
+
     <el-container>
       <el-main>
         <el-card class="history-card">
@@ -139,7 +165,8 @@ import {
   Loading,
   PictureFilled,
   Download,
-  RefreshRight
+  RefreshRight,
+  HomeFilled
 } from '@element-plus/icons-vue';
 import { config } from '../config/config';
 import { onMounted, onUnmounted } from 'vue';
@@ -493,5 +520,66 @@ const handleDownload = async (item: ConversionHistory) => {
     justify-content: center;
     flex-wrap: wrap;
   }
+}
+
+.header {
+  background-color: var(--el-bg-color);
+  border-bottom: 1px solid var(--el-border-color-light);
+  padding: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  height: 60px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.logo {
+  margin: 0;
+  font-size: 20px;
+  color: var(--el-text-color-primary);
+}
+
+.nav-menu {
+  background-color: transparent;
+  border-bottom: none;
+}
+
+:deep(.el-menu--horizontal) {
+  border-bottom: none;
+}
+
+:deep(.el-menu-item) {
+  font-size: 16px;
+  height: 60px;
+  line-height: 60px;
+  padding: 0 20px;
+}
+
+:deep(.el-menu-item.is-active) {
+  font-weight: 600;
+}
+
+:deep(.el-menu-item .el-icon) {
+  margin-right: 4px;
+  font-size: 18px;
 }
 </style> 

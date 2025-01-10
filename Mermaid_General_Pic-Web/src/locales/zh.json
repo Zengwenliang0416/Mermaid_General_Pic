@@ -7,6 +7,9 @@
     "clear": "清除",
     "load": "加载"
   },
+  "nav": {
+    "home": "主页"
+  },
   "editor": {
     "title": "Mermaid 编辑器",
     "upload": "上传",
