@@ -7,33 +7,53 @@ const router: Router = express.Router();
 interface GenerateRequest {
   prompt: string;
   conversationId?: string;
+  apiKey: string;
+  model: string;
+  kimiModel?: string;
 }
 
 // 生成 Mermaid 代码
 router.post('/generate', async (req: Request<{}, {}, GenerateRequest>, res: Response) => {
   try {
     logWithContext('debug', 'Received AI generation request', {
-      body: req.body,
+      body: {
+        ...req.body,
+        apiKey: req.body.apiKey ? '***' : undefined // 隐藏 API 密钥
+      },
       headers: req.headers
     });
 
-    const { prompt, conversationId } = req.body;
+    const { prompt, conversationId, apiKey, kimiModel } = req.body;
 
     if (!prompt) {
       logWithContext('warn', 'Missing prompt parameter', {
-        body: req.body
+        body: {
+          ...req.body,
+          apiKey: req.body.apiKey ? '***' : undefined
+        }
       });
       return res.status(400).json({ error: 'Missing prompt parameter' });
     }
 
+    if (!apiKey) {
+      logWithContext('warn', 'Missing API key', {
+        body: {
+          ...req.body,
+          apiKey: undefined
+        }
+      });
+      return res.status(400).json({ error: 'Missing API key' });
+    }
+
     // 生成 Mermaid 代码
-    const result = await KimiService.generateMermaidCode(prompt, conversationId);
+    const result = await KimiService.generateMermaidCode(prompt, conversationId, apiKey, kimiModel);
 
     logWithContext('info', 'Successfully generated Mermaid code', {
       prompt: prompt.substring(0, 100),
       codeLength: result.code.length,
       conversationId: result.conversationId,
-      code: result.code
+      code: result.code,
+      kimiModel
     });
 
     res.json({

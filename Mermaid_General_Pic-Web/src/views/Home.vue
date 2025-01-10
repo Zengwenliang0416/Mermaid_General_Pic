@@ -6,6 +6,43 @@
         <el-row :gutter="20" class="mb-4">
           <el-col :span="24">
             <el-card class="ai-card" shadow="hover">
+              <div class="ai-settings">
+                <el-select
+                  v-model="aiStore.settings.selectedModel"
+                  @change="handleModelChange"
+                  class="model-select"
+                  :placeholder="t('ai.model')"
+                >
+                  <el-option
+                    v-for="(config, model) in aiStore.settings.modelConfigs"
+                    :key="model"
+                    :label="config.name"
+                    :value="model"
+                  />
+                </el-select>
+                <el-select
+                  v-if="isKimiModel"
+                  v-model="kimiModel"
+                  @change="handleKimiModelChange"
+                  class="model-version-select"
+                  :placeholder="t('ai.kimi_model_placeholder')"
+                >
+                  <el-option
+                    v-for="(label, value) in kimiModels"
+                    :key="value"
+                    :label="label"
+                    :value="value"
+                  />
+                </el-select>
+                <el-input
+                  v-model="currentApiKey"
+                  type="password"
+                  :placeholder="t('ai.api_key_placeholder')"
+                  show-password
+                  @change="handleApiKeyChange"
+                  class="api-key-input"
+                />
+              </div>
               <div class="ai-input-container">
                 <el-input
                   v-model="aiPrompt"
@@ -192,7 +229,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import {
   Edit,
   Upload,
@@ -203,13 +240,16 @@ import {
   Refresh
 } from '@element-plus/icons-vue';
 import { useMermaidStore } from '../stores/mermaid';
+import { useAiStore } from '../stores/ai';
 import DownloadDialog from '../components/DownloadDialog.vue';
 import { useI18n } from 'vue-i18n';
 import { api } from '../services/api';
 import { ElMessage } from 'element-plus';
+import { AI_MODELS, KIMI_MODELS, type AiModel, type ChatMessage } from '../types';
 
 const { t } = useI18n();
 const store = useMermaidStore();
+const aiStore = useAiStore();
 const previewUrl = ref<string>('');
 const zoomLevel = ref(1);
 const zoomPercent = ref(100);
@@ -217,10 +257,30 @@ const aiPrompt = ref('');
 const isGenerating = ref(false);
 const conversationId = ref<string>('');
 const chatHistory = ref<ChatMessage[]>([]);
+const currentApiKey = ref(aiStore.getCurrentApiKey());
+const kimiModel = ref(aiStore.getCurrentKimiModel());
+const kimiModels = KIMI_MODELS;
+const isKimiModel = computed(() => aiStore.settings.selectedModel === AI_MODELS.KIMI);
+
+// 处理模型变更
+const handleModelChange = (model: AiModel) => {
+  aiStore.updateSelectedModel(model);
+  currentApiKey.value = aiStore.getCurrentApiKey();
+};
+
+// 处理API密钥变更
+const handleApiKeyChange = (apiKey: string) => {
+  aiStore.updateApiKey(aiStore.settings.selectedModel, apiKey);
+};
+
+// 处理 Kimi 模型变更
+const handleKimiModelChange = (model: string) => {
+  aiStore.updateKimiModel(model);
+};
 
 // 初始化
 onMounted(async () => {
-  await store.fetchFormats();
+  await store.initializeStore();
 });
 
 // 处理代码变更
@@ -296,6 +356,12 @@ const handleGenerate = async () => {
     return;
   }
 
+  const apiKey = aiStore.getCurrentApiKey();
+  if (!apiKey) {
+    ElMessage.warning(t('ai.api_key_required'));
+    return;
+  }
+
   isGenerating.value = true;
 
   try {
@@ -307,8 +373,10 @@ const handleGenerate = async () => {
     });
 
     const response = await api.generateFromAi(aiPrompt.value, {
-      model: 'kimi',
-      conversationId: conversationId.value
+      model: aiStore.settings.selectedModel as AiModel,
+      conversationId: conversationId.value,
+      apiKey: apiKey,
+      kimiModel: isKimiModel.value ? aiStore.getCurrentKimiModel() : undefined
     });
     
     // 添加助手回复到历史记录
@@ -618,5 +686,23 @@ const handleGenerate = async () => {
 
 .user-message {
   color: var(--el-color-primary);
+}
+
+.ai-settings {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.model-select {
+  width: 150px;
+}
+
+.api-key-input {
+  flex: 1;
+}
+
+.model-version-select {
+  width: 180px;
 }
 </style> 
