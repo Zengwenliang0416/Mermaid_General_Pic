@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Application } from 'express';
 import cors from 'cors';
 import { config } from './config/config';
 import { loggingMiddleware } from './utils/logging-middleware';
@@ -7,7 +7,7 @@ import mermaidRoutes from './routes/mermaid.routes';
 import kimiRoutes from './routes/kimi.routes';
 import { MermaidService } from './services/mermaid.service';
 
-const app = express();
+const app: Application = express();
 
 // 基础中间件
 app.use(cors());

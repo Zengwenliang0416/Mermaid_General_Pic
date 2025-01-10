@@ -25,9 +25,14 @@
     "prompt_required": "请输入图表描述",
     "generation_success": "图表生成成功",
     "generation_error": "图表生成失败",
+    "generation_complete": "已生成以下 Mermaid 代码：",
     "model": "AI 模型",
     "model_kimi": "Kimi",
-    "model_deepseek": "DeepSeek"
+    "model_deepseek": "DeepSeek",
+    "new_conversation": "新建对话",
+    "new_conversation_success": "已创建新对话",
+    "user": "用户",
+    "assistant": "助手"
   },
   "download": {
     "title": "下载设置",

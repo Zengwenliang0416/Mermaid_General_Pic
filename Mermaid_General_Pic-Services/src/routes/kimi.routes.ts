@@ -1,18 +1,23 @@
-import express from 'express';
+import express, { Request, Response, Router } from 'express';
 import { KimiService } from '../services/kimi.service';
 import { logWithContext } from '../utils/logger';
 
-const router = express.Router();
+const router: Router = express.Router();
+
+interface GenerateRequest {
+  prompt: string;
+  conversationId?: string;
+}
 
 // 生成 Mermaid 代码
-router.post('/generate', async (req, res) => {
+router.post('/generate', async (req: Request<{}, {}, GenerateRequest>, res: Response) => {
   try {
     logWithContext('debug', 'Received AI generation request', {
       body: req.body,
       headers: req.headers
     });
 
-    const { prompt } = req.body;
+    const { prompt, conversationId } = req.body;
 
     if (!prompt) {
       logWithContext('warn', 'Missing prompt parameter', {
@@ -22,15 +27,18 @@ router.post('/generate', async (req, res) => {
     }
 
     // 生成 Mermaid 代码
-    const mermaidCode = await KimiService.generateMermaidCode(prompt);
+    const result = await KimiService.generateMermaidCode(prompt, conversationId);
 
     logWithContext('info', 'Successfully generated Mermaid code', {
       prompt: prompt.substring(0, 100),
-      codeLength: mermaidCode.length
+      codeLength: result.code.length,
+      conversationId: result.conversationId,
+      code: result.code
     });
 
     res.json({
-      code: mermaidCode
+      code: result.code,
+      conversationId: result.conversationId
     });
   } catch (error: any) {
     const errorMessage = error?.message || 'Unknown error';

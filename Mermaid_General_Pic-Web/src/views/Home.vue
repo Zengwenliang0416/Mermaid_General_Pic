@@ -13,6 +13,16 @@
                   :disabled="isGenerating"
                   @keyup.enter="handleGenerate"
                 >
+                  <template #prepend>
+                    <el-button
+                      type="primary"
+                      plain
+                      @click="handleNewConversation"
+                      :disabled="isGenerating"
+                    >
+                      {{ t('ai.new_conversation') }}
+                    </el-button>
+                  </template>
                   <template #append>
                     <el-button
                       type="primary"
@@ -23,6 +33,24 @@
                     </el-button>
                   </template>
                 </el-input>
+              </div>
+
+              <!-- 对话历史记录 -->
+              <div v-if="chatHistory.length > 0" class="chat-history">
+                <div v-for="(message, index) in chatHistory" :key="index" class="chat-message">
+                  <div class="message-header">
+                    <el-tag size="small" :type="message.role === 'user' ? 'primary' : 'success'">
+                      {{ message.role === 'user' ? t('ai.user') : t('ai.assistant') }}
+                    </el-tag>
+                    <span class="message-time">{{ formatTime(message.timestamp) }}</span>
+                  </div>
+                  <div class="message-content" :class="{ 'user-message': message.role === 'user' }">
+                    {{ message.content }}
+                  </div>
+                  <div v-if="message.code" class="message-code">
+                    <pre>{{ message.code }}</pre>
+                  </div>
+                </div>
               </div>
             </el-card>
           </el-col>
@@ -187,6 +215,8 @@ const zoomLevel = ref(1);
 const zoomPercent = ref(100);
 const aiPrompt = ref('');
 const isGenerating = ref(false);
+const conversationId = ref<string>('');
+const chatHistory = ref<ChatMessage[]>([]);
 
 // 初始化
 onMounted(async () => {
@@ -247,6 +277,18 @@ const handleZoomChange = (value: number) => {
   zoomLevel.value = value / 100;
 };
 
+// 格式化时间
+const formatTime = (timestamp: number) => {
+  return new Date(timestamp).toLocaleTimeString();
+};
+
+// 处理新建对话
+const handleNewConversation = () => {
+  conversationId.value = '';
+  chatHistory.value = [];
+  ElMessage.success(t('ai.new_conversation_success'));
+};
+
 // 处理AI生成
 const handleGenerate = async () => {
   if (!aiPrompt.value.trim()) {
@@ -257,15 +299,32 @@ const handleGenerate = async () => {
   isGenerating.value = true;
 
   try {
+    // 添加用户消息到历史记录
+    chatHistory.value.push({
+      role: 'user',
+      content: aiPrompt.value,
+      timestamp: Date.now()
+    });
+
     const response = await api.generateFromAi(aiPrompt.value, {
-      model: 'kimi'
+      model: 'kimi',
+      conversationId: conversationId.value
     });
     
+    // 添加助手回复到历史记录
+    chatHistory.value.push({
+      role: 'assistant',
+      content: t('ai.generation_complete'),
+      code: response.code,
+      timestamp: Date.now()
+    });
+
     store.code = response.code;
+    conversationId.value = response.conversationId;
     await handleConvert();
     
     ElMessage.success(t('ai.generation_success'));
-    aiPrompt.value = ''; // 清空输入
+    aiPrompt.value = '';
   } catch (error) {
     console.error('Failed to generate diagram:', error);
     ElMessage.error(t('ai.generation_error'));
@@ -508,5 +567,56 @@ const handleGenerate = async () => {
 :deep(.el-image-viewer__prev),
 :deep(.el-image-viewer__next) {
   display: none;
+}
+
+.chat-history {
+  margin-top: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+  border-top: 1px solid var(--el-border-color-light);
+  padding-top: 16px;
+}
+
+.chat-message {
+  margin-bottom: 16px;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: var(--el-bg-color-page);
+}
+
+.message-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.message-time {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+}
+
+.message-content {
+  margin-bottom: 8px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.message-code {
+  background-color: var(--el-bg-color);
+  border-radius: 4px;
+  padding: 12px;
+}
+
+.message-code pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: 'Fira Code', monospace;
+  font-size: 13px;
+}
+
+.user-message {
+  color: var(--el-color-primary);
 }
 </style> 
