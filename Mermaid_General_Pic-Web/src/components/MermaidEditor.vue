@@ -2,7 +2,7 @@
   <div class="editor-preview-container">
     <el-row :gutter="20">
       <!-- 左侧编辑器 -->
-      <el-col :span="12">
+      <el-col :xs="24" :sm="24" :md="12">
         <el-card class="editor-card" shadow="hover">
           <template #header>
             <div class="card-header">
@@ -11,17 +11,23 @@
                 <span>{{ t('editor.title') }}</span>
               </div>
               <div class="header-actions">
-                <el-upload
-                  class="upload-btn"
-                  :show-file-list="false"
-                  accept=".txt,.mmd"
-                  :before-upload="handleUpload"
+                <el-tooltip
+                  :content="t('editor.upload_tooltip')"
+                  placement="bottom"
+                  :show-after="300"
                 >
-                  <el-button type="primary" size="small">
-                    <el-icon><Upload /></el-icon>
-                    {{ t('editor.upload') }}
-                  </el-button>
-                </el-upload>
+                  <el-upload
+                    class="upload-btn"
+                    :show-file-list="false"
+                    accept=".txt,.mmd"
+                    :before-upload="handleUpload"
+                  >
+                    <el-button type="primary" size="small">
+                      <el-icon><Upload /></el-icon>
+                      <span class="button-text">{{ t('editor.upload') }}</span>
+                    </el-button>
+                  </el-upload>
+                </el-tooltip>
               </div>
             </div>
           </template>
@@ -31,7 +37,7 @@
               <el-input
                 v-model="store.code"
                 type="textarea"
-                :rows="25"
+                :rows="20"
                 :placeholder="t('editor.placeholder')"
                 @input="handleCodeChange"
                 resize="none"
@@ -40,15 +46,21 @@
             </div>
 
             <div class="editor-footer">
-              <el-button
-                type="primary"
-                :loading="store.isLoading"
-                @click="handleConvert"
-                size="small"
+              <el-tooltip
+                :content="t('editor.convert_tooltip')"
+                placement="top"
+                :show-after="300"
               >
-                <el-icon><Refresh /></el-icon>
-                {{ t('editor.convert') }}
-              </el-button>
+                <el-button
+                  type="primary"
+                  :loading="store.isLoading"
+                  @click="handleConvert"
+                  size="small"
+                >
+                  <el-icon><Refresh /></el-icon>
+                  <span class="button-text">{{ t('editor.convert') }}</span>
+                </el-button>
+              </el-tooltip>
             </div>
           </div>
 
@@ -63,7 +75,7 @@
       </el-col>
 
       <!-- 右侧预览 -->
-      <el-col :span="12">
+      <el-col :xs="24" :sm="24" :md="12">
         <el-card class="preview-card" shadow="hover">
           <template #header>
             <div class="card-header">
@@ -72,20 +84,24 @@
                 <span>{{ t('preview.title') }}</span>
               </div>
               <div class="preview-controls">
-                <div v-if="previewUrl">
+                <el-tooltip
+                  v-if="previewUrl"
+                  :content="t('preview.zoom_tooltip')"
+                  placement="bottom"
+                  :show-after="300"
+                >
                   <el-input-number
                     v-model="zoomPercent"
                     :min="10"
                     :max="300"
                     :step="10"
                     size="small"
-                    style="width: 110px"
                     @change="handleZoomChange"
                     controls-position="right"
                   >
                     <template #suffix>%</template>
                   </el-input-number>
-                </div>
+                </el-tooltip>
                 <DownloadDialog
                   v-if="previewUrl"
                   :code="store.code"
@@ -249,7 +265,6 @@ defineExpose({
 .preview-card {
   height: 100%;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
 }
 
@@ -263,26 +278,38 @@ defineExpose({
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--el-border-color-light);
+  padding: 0;
 }
 
 .header-title {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 18px;
+  gap: 8px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--el-text-color-primary);
 }
 
 .header-title .el-icon {
-  font-size: 20px;
+  font-size: 18px;
   color: var(--el-color-primary);
 }
 
+.header-actions,
+.preview-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .editor-container {
-  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.editor-main {
+  position: relative;
 }
 
 :deep(.el-textarea__inner) {
@@ -291,171 +318,122 @@ defineExpose({
   line-height: 1.6;
   padding: 16px;
   border-radius: 8px;
-  background-color: var(--el-bg-color);
-  border: 1px solid var(--el-border-color-light);
+  background-color: var(--el-bg-color-page);
   transition: all 0.3s ease;
   resize: none;
 }
 
-:deep(.el-textarea__inner:hover) {
-  border-color: var(--el-border-color-hover);
-}
-
 :deep(.el-textarea__inner:focus) {
-  border-color: var(--el-color-primary);
   box-shadow: 0 0 0 2px var(--el-color-primary-light-8);
 }
 
 .editor-footer {
   display: flex;
   justify-content: flex-end;
-}
-
-.preview-container {
-  height: 600px;
-  overflow: auto;
-  background-color: var(--el-bg-color);
-  border-radius: 8px;
-  border: 1px solid var(--el-border-color-light);
-  padding: 20px;
-  margin: 20px;
-}
-
-.preview-image {
-  transition: transform 0.3s ease;
-}
-
-:deep(.el-image) {
-  width: auto !important;
-  display: inline-block;
-}
-
-.empty-preview,
-.image-placeholder,
-.image-error {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   gap: 12px;
-  color: var(--el-text-color-secondary);
-  font-size: 14px;
-}
-
-.preview-controls {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-}
-
-:deep(.el-button-group) {
-  display: flex;
-  align-items: center;
-}
-
-:deep(.el-button-group .el-button) {
-  padding: 8px 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--el-border-color-light);
 }
 
 .error-alert {
   margin-top: 16px;
+  border-radius: 8px;
 }
 
-@media (max-width: 768px) {
-  .el-row {
-    flex-direction: column;
-  }
-
-  .el-col {
-    width: 100% !important;
-    margin-bottom: 20px;
-  }
-}
-
-:deep(.el-image-viewer__wrapper) {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 2000;
-}
-
-:deep(.el-image-viewer__mask) {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  opacity: 0.7;
-  background: #000;
-}
-
-:deep(.el-image-viewer__actions) {
-  opacity: 0.9;
-  padding: 20px;
-}
-
-:deep(.el-image-viewer__actions__inner) {
-  border-radius: 20px;
-  padding: 8px 16px;
-  background-color: rgba(0, 0, 0, 0.7);
-}
-
-:deep(.el-image-viewer__btn) {
-  color: #fff;
-  opacity: 0.8;
-  font-size: 24px;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-:deep(.el-image-viewer__btn:hover) {
-  opacity: 1;
-  transform: scale(1.1);
-}
-
-:deep(.el-image-viewer__close) {
-  top: 20px;
-  right: 20px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: rgba(0, 0, 0, 0.7);
-  font-size: 24px;
-  opacity: 0.8;
-  transition: all 0.3s;
-}
-
-:deep(.el-image-viewer__close:hover) {
-  opacity: 1;
-  transform: rotate(90deg);
-  background-color: rgba(0, 0, 0, 0.9);
-}
-
-:deep(.el-image-viewer__canvas) {
+.preview-container {
+  position: relative;
+  min-height: 400px;
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100%;
-  height: 100%;
+  background-color: var(--el-bg-color-page);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-:deep(.el-image-viewer__img) {
+.preview-image {
   max-width: 100%;
-  max-height: 100%;
-  user-select: none;
-  -webkit-user-drag: none;
-  cursor: grab;
+  transition: transform 0.3s ease;
 }
 
-:deep(.el-image-viewer__img:active) {
-  cursor: grabbing;
+.image-placeholder,
+.image-error,
+.empty-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: var(--el-text-color-secondary);
 }
 
-:deep(.el-image-viewer__prev),
-:deep(.el-image-viewer__next) {
-  display: none;
+.image-placeholder .el-icon,
+.image-error .el-icon,
+.empty-preview .el-icon {
+  font-size: 48px;
+  opacity: 0.5;
+}
+
+:deep(.el-upload) {
+  width: auto;
+}
+
+:deep(.el-button) {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+:deep(.el-input-number) {
+  width: 120px;
+}
+
+:deep(.el-input-number__decrease),
+:deep(.el-input-number__increase) {
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+:deep(.el-input-number__decrease:hover),
+:deep(.el-input-number__increase:hover) {
+  background-color: var(--el-color-primary-light-9);
+  color: var(--el-color-primary);
+}
+
+@media (max-width: 768px) {
+  .editor-preview-container {
+    margin-top: 16px;
+  }
+
+  :deep(.el-row) {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  :deep(.el-col) {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .editor-card,
+  .preview-card {
+    margin-bottom: 16px;
+  }
+
+  .preview-container {
+    min-height: 300px;
+  }
+
+  .header-title {
+    font-size: 14px;
+  }
+
+  .header-title .el-icon {
+    font-size: 16px;
+  }
+
+  :deep(.el-textarea__inner) {
+    font-size: 13px;
+    padding: 12px;
+  }
 }
 </style> 

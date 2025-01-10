@@ -35,7 +35,10 @@
           placement="bottom"
           :show-after="300"
         >
-          <button class="theme-switch" @click="toggleTheme">
+          <button 
+            class="theme-switch" 
+            @click="() => toggleTheme()"
+          >
             <el-icon v-if="isDark"><Sunny /></el-icon>
             <el-icon v-else><Moon /></el-icon>
           </button>
@@ -244,8 +247,8 @@ const showHelp = () => {
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  border: none;
-  background: none;
+  border: 1px solid var(--el-border-color-light);
+  background-color: var(--el-bg-color);
   cursor: pointer;
   transition: all 0.3s ease;
   color: var(--el-text-color-regular);
@@ -254,6 +257,7 @@ const showHelp = () => {
 .theme-switch:hover {
   background-color: var(--el-color-primary-light-9);
   color: var(--el-color-primary);
+  transform: scale(1.05);
 }
 
 .theme-switch .el-icon {
@@ -261,13 +265,17 @@ const showHelp = () => {
 }
 
 .help-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   width: 36px;
   height: 36px;
   border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.3s ease;
+}
+
+.help-button:hover {
+  transform: scale(1.05);
 }
 
 .help-button .el-icon {
@@ -285,7 +293,7 @@ const showHelp = () => {
   margin-bottom: 16px;
   font-size: 18px;
   font-weight: 600;
-  color: var(--el-color-primary);
+  color: var(--el-text-color-primary);
 }
 
 .help-content h3:first-child {
@@ -311,6 +319,20 @@ const showHelp = () => {
   padding: 8px;
   background-color: var(--el-bg-color-page);
   border-radius: 6px;
+
+  kbd {
+    padding: 4px 6px;
+    border-radius: 4px;
+    background-color: var(--el-bg-color);
+    border: 1px solid var(--el-border-color);
+    font-family: monospace;
+    font-size: 12px;
+  }
+
+  span {
+    color: var(--el-text-color-regular);
+    font-size: 14px;
+  }
 }
 
 kbd {
@@ -332,20 +354,43 @@ kbd {
 }
 
 @media (max-width: 768px) {
-  .nav-item-text {
-    display: none;
+  .nav-container {
+    padding: 0 12px;
   }
 
-  .nav-link {
-    padding: 8px;
+  .nav-left {
+    gap: 16px;
   }
 
   .logo {
     font-size: 18px;
   }
 
+  .nav-links {
+    gap: 12px;
+  }
+
+  .nav-link {
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+
+  .nav-item-text {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
   .nav-left {
-    gap: 16px;
+    gap: 8px;
+  }
+
+  .nav-links {
+    gap: 8px;
+  }
+
+  .nav-link {
+    padding: 6px;
   }
 }
 </style> 
