@@ -1,125 +1,114 @@
 <template>
-  <div class="history">
+  <div class="history-page">
+    <NavBar />
     <el-container>
       <el-main>
-        <el-card class="history-card">
+        <el-card class="history-card" shadow="hover">
           <template #header>
             <div class="card-header">
               <div class="header-title">
                 <el-icon><Timer /></el-icon>
                 <span>{{ t('history.title') }}</span>
               </div>
-              <el-button
-                type="danger"
-                :disabled="!store.history.length"
-                @click="handleClear"
-                size="small"
-              >
-                <el-icon><Delete /></el-icon>
-                {{ t('common.clear') }}
-              </el-button>
+              <div class="header-actions">
+                <el-button
+                  type="danger"
+                  plain
+                  size="small"
+                  @click="handleClearHistory"
+                >
+                  <el-icon><Delete /></el-icon>
+                  {{ t('history.clear') }}
+                </el-button>
+              </div>
             </div>
           </template>
 
-          <el-empty
-            v-if="!store.history.length"
-            :description="t('history.empty')"
-          />
-
-          <el-timeline v-else>
-            <el-timeline-item
-              v-for="item in store.history"
-              :key="item.timestamp"
-              :timestamp="formatDate(item.timestamp)"
-              :type="getTimelineType(item)"
-              :hollow="true"
-              size="large"
+          <div v-if="store.history.length > 0" class="history-list">
+            <div
+              v-for="(item, index) in store.history"
+              :key="index"
+              class="history-item"
             >
-              <el-card class="history-item" shadow="hover">
-                <div class="history-content">
-                  <div class="code-preview">
-                    <div class="code-header">
-                      <el-icon><Document /></el-icon>
-                      <span>{{ t('history.code') }}</span>
+              <div class="item-preview">
+                <el-image
+                  :src="item.url"
+                  fit="contain"
+                  :preview-src-list="[item.url]"
+                  :initial-index="0"
+                  preview-teleported
+                  class="preview-image"
+                >
+                  <template #placeholder>
+                    <div class="image-placeholder">
+                      <el-icon><Loading /></el-icon>
+                      <span>{{ t('preview.loading') }}</span>
                     </div>
-                    <pre>{{ item.code }}</pre>
-                  </div>
-                  <div class="image-preview">
-                    <div class="preview-header">
-                      <el-icon><Picture /></el-icon>
-                      <span>{{ t('preview.title') }}</span>
+                  </template>
+                  <template #error>
+                    <div class="image-error">
+                      <el-icon><PictureFilled /></el-icon>
+                      <span>{{ t('preview.error') }}</span>
                     </div>
-                    <el-image
-                      :src="item.url"
-                      fit="contain"
-                      class="preview-image"
-                      :preview-src-list="[item.url]"
-                      :initial-index="0"
-                      preview-teleported
-                      :preview-options="{
-                        zoom: 1.5,
-                        zoomRate: 1.2,
-                        defaultFullScreen: false,
-                        closeOnPressEscape: true,
-                        teleported: true
-                      }"
-                      hide-on-click-modal
+                  </template>
+                </el-image>
+              </div>
+
+              <div class="item-info">
+                <div class="info-header">
+                  <span class="timestamp">{{ formatTime(item.timestamp) }}</span>
+                  <div class="info-actions">
+                    <el-button
+                      type="primary"
+                      link
+                      size="small"
+                      @click="handleLoad(item)"
                     >
-                      <template #placeholder>
-                        <div class="image-placeholder">
-                          <el-icon><Loading /></el-icon>
-                        </div>
-                      </template>
-                      <template #error>
-                        <div class="image-error">
-                          <el-icon><PictureFilled /></el-icon>
-                          <span>{{ t('preview.error') }}</span>
-                        </div>
-                      </template>
-                    </el-image>
+                      <el-icon><Edit /></el-icon>
+                      {{ t('history.load') }}
+                    </el-button>
+                    <el-button
+                      type="danger"
+                      link
+                      size="small"
+                      @click="handleDelete(index)"
+                    >
+                      <el-icon><Delete /></el-icon>
+                      {{ t('history.delete') }}
+                    </el-button>
                   </div>
                 </div>
-                <div class="history-footer">
-                  <div class="history-info">
-                    <el-tooltip :content="t('editor.format')" placement="top">
-                      <el-tag size="small" effect="plain">{{ item.format.toUpperCase() }}</el-tag>
-                    </el-tooltip>
-                    <el-tooltip :content="t('editor.dpi')" placement="top">
-                      <el-tag size="small" type="info" effect="plain">{{ item.dpi }} DPI</el-tag>
-                    </el-tooltip>
-                    <el-tooltip :content="t('editor.theme')" placement="top">
-                      <el-tag size="small" type="success" effect="plain">{{ t(`theme.${item.theme}`) }}</el-tag>
-                    </el-tooltip>
-                    <el-tooltip :content="t('editor.background')" placement="top">
-                      <el-tag size="small" type="warning" effect="plain">{{ t(`background.${item.background}`) }}</el-tag>
-                    </el-tooltip>
-                  </div>
-                  <div class="history-actions">
-                    <el-tooltip :content="t('history.load_tooltip')" placement="top">
-                      <el-button
-                        type="primary"
-                        link
-                        @click="handleLoad(item)"
-                      >
-                        <el-icon><RefreshRight /></el-icon>
-                        {{ t('common.load') }}
-                      </el-button>
-                    </el-tooltip>
-                    <el-tooltip :content="t('history.download_tooltip')" placement="top">
-                      <el-button
-                        type="primary"
-                        link
-                        @click="handleDownload(item)"
-                      >
-                        <el-icon><Download /></el-icon>
-                        {{ t('common.download') }}
-                      </el-button>
-                    </el-tooltip>
-                  </div>
+
+                <el-collapse>
+                  <el-collapse-item>
+                    <template #title>
+                      <el-icon><Document /></el-icon>
+                      <span>{{ t('history.show_code') }}</span>
+                    </template>
+                    <pre class="code-block">{{ item.code }}</pre>
+                  </el-collapse-item>
+                </el-collapse>
+
+                <div class="item-meta">
+                  <el-tag size="small" type="info">
+                    {{ t('editor.format') }}: {{ item.format }}
+                  </el-tag>
+                  <el-tag size="small" type="info">
+                    {{ t('editor.dpi') }}: {{ item.dpi }}
+                  </el-tag>
+                  <el-tag size="small" type="info">
+                    {{ t('editor.theme') }}: {{ item.theme }}
+                  </el-tag>
                 </div>
-              </el-card>
-            </el-timeline-item>
-          </el-timeline>
+              </div>
+            </div>
+          </div>
+
+          <el-empty
+            v-else
+            :description="t('history.empty')"
+            :image-size="200"
+          />
         </el-card>
       </el-main>
     </el-container>
@@ -127,371 +116,240 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
-import { ElMessageBox, ElMessage } from 'element-plus';
-import { useMermaidStore, type ConversionHistory } from '../stores/mermaid';
+import { Timer, Loading, PictureFilled, Edit, Delete, Document } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
-import {
-  Timer,
-  Delete,
-  Document,
-  Picture,
-  Loading,
-  PictureFilled,
-  Download,
-  RefreshRight
-} from '@element-plus/icons-vue';
-import { config } from '../config/config';
-import { onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { useMermaidStore } from '../stores/mermaid';
+import { ElMessageBox } from 'element-plus';
+import NavBar from '../components/NavBar.vue';
 
 const { t } = useI18n();
 const router = useRouter();
 const store = useMermaidStore();
 
-// 初始化
-onMounted(async () => {
-  await store.initializeStore();
-});
+// 格式化时间
+const formatTime = (timestamp: number) => {
+  return new Date(timestamp).toLocaleString();
+};
 
-// 清理 URL 对象
-onUnmounted(() => {
-  store.history.forEach(item => {
-    if (item.url) {
-      URL.revokeObjectURL(item.url);
-    }
-  });
-});
+// 加载历史记录
+const handleLoad = (item: any) => {
+  store.code = item.code;
+  store.format = item.format;
+  store.dpi = item.dpi;
+  store.theme = item.theme;
+  store.background = item.background;
+  router.push('/');
+};
 
-// 格式化日期
-const formatDate = (timestamp: number) => {
-  const date = new Date(timestamp);
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  const oneDay = 24 * 60 * 60 * 1000;
-
-  if (diff < oneDay) {
-    return t('history.today', { time: date.toLocaleTimeString() });
-  } else if (diff < 2 * oneDay) {
-    return t('history.yesterday', { time: date.toLocaleTimeString() });
-  } else {
-    return date.toLocaleString();
+// 删除单条历史记录
+const handleDelete = async (index: number) => {
+  try {
+    await ElMessageBox.confirm(
+      t('history.delete_confirm'),
+      t('common.warning'),
+      {
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
+        type: 'warning',
+      }
+    );
+    
+    // 释放 URL
+    URL.revokeObjectURL(store.history[index].url);
+    // 删除记录
+    store.history.splice(index, 1);
+  } catch {
+    // 用户取消删除
   }
 };
 
-// 获取时间轴节点类型
-const getTimelineType = (item: ConversionHistory) => {
-  switch (item.format) {
-    case 'png':
-      return 'primary';
-    case 'svg':
-      return 'success';
-    case 'jpg':
-      return 'warning';
-    default:
-      return 'info';
-  }
-};
-
-// 处理清除历史记录
-const handleClear = async () => {
+// 清空历史记录
+const handleClearHistory = async () => {
   try {
     await ElMessageBox.confirm(
       t('history.clear_confirm'),
-      t('history.clear'),
+      t('common.warning'),
       {
-        confirmButtonText: t('common.clear'),
+        confirmButtonText: t('common.confirm'),
         cancelButtonText: t('common.cancel'),
-        type: 'warning'
+        type: 'warning',
       }
     );
-    store.clearHistory();
-    ElMessage.success(t('history.clear_success'));
+    
+    // 释放所有 URL
+    store.history.forEach(item => {
+      URL.revokeObjectURL(item.url);
+    });
+    // 清空历史记录
+    store.history = [];
   } catch {
-    // 用户取消
-  }
-};
-
-// 处理加载历史记录
-const handleLoad = (item: ConversionHistory) => {
-  store.loadFromHistory(item);
-  router.push('/');
-  ElMessage.success(t('history.load_success'));
-};
-
-// 处理下载
-const handleDownload = async (item: ConversionHistory) => {
-  try {
-    const response = await fetch(`${config.apiBaseUrl}${item.url}`);
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `mermaid.${item.format}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-  } catch (err) {
-    console.error('Download failed:', err);
-    ElMessage.error(t('download.error'));
+    // 用户取消清空
   }
 };
 </script>
 
 <style scoped>
-.history {
-  padding: 20px;
+.history-page {
   background-color: var(--el-bg-color-page);
   min-height: 100vh;
 }
 
 .history-card {
-  border-radius: 8px;
-  box-shadow: var(--el-box-shadow-light);
+  margin: 24px auto;
+  max-width: 1200px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.history-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 16px 20px;
 }
 
 .header-title {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 16px;
+  gap: 10px;
+  font-size: 18px;
   font-weight: 600;
-}
-
-.history-item {
-  margin-bottom: 20px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
-
-.history-content {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-.code-preview,
-.image-preview {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background-color: var(--el-bg-color);
-  border: 1px solid var(--el-border-color-light);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.code-header,
-.preview-header {
-  padding: 8px 12px;
-  background-color: var(--el-bg-color-page);
-  font-weight: 500;
-  font-size: 14px;
-  border-bottom: 1px solid var(--el-border-color-light);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.code-preview pre {
-  margin: 0;
-  padding: 12px;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  font-family: 'Fira Code', monospace;
-  font-size: 13px;
-  line-height: 1.5;
-  overflow: auto;
-  max-height: 180px;
   color: var(--el-text-color-primary);
 }
 
-.image-preview .el-image {
-  padding: 12px;
+.header-title .el-icon {
+  font-size: 20px;
+  color: var(--el-color-primary);
+}
+
+.history-list {
+  padding: 20px;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.history-item {
+  display: flex;
+  gap: 24px;
+  padding: 20px;
+  border-radius: 12px;
   background-color: var(--el-bg-color);
+  border: 1px solid var(--el-border-color-light);
+  transition: all 0.3s ease;
+}
+
+.history-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.item-preview {
+  width: 300px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--el-border-color-light);
 }
 
 .preview-image {
-  max-width: 100%;
-  max-height: 180px;
-  transition: transform 0.3s ease;
-}
-
-.preview-image:hover {
-  transform: scale(1.02);
+  width: 100%;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--el-bg-color-page);
 }
 
 .image-placeholder,
 .image-error {
-  height: 180px;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 12px;
   color: var(--el-text-color-secondary);
   font-size: 14px;
 }
 
-.history-footer {
+.item-info {
+  flex: 1;
+  min-width: 0;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--el-border-color-lighter);
-}
-
-.history-info {
-  display: flex;
-  gap: 8px;
-}
-
-.history-actions {
-  display: flex;
+  flex-direction: column;
   gap: 16px;
 }
 
-:deep(.el-timeline) {
-  padding: 16px;
-}
-
-:deep(.el-timeline-item__node) {
-  background-color: var(--el-color-primary);
-}
-
-:deep(.el-timeline-item__tail) {
-  border-left-color: var(--el-border-color);
-}
-
-:deep(.el-timeline-item__timestamp) {
-  color: var(--el-text-color-secondary);
-  font-size: 13px;
-}
-
-:deep(.el-button--small) {
-  padding: 8px 16px;
-}
-
-:deep(.el-tag) {
-  border-radius: 4px;
-}
-
-:deep(.el-image-viewer__wrapper) {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 2000;
-}
-
-:deep(.el-image-viewer__mask) {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  opacity: 0.7;
-  background: #000;
-}
-
-:deep(.el-image-viewer__actions) {
-  opacity: 0.9;
-  padding: 20px;
-}
-
-:deep(.el-image-viewer__actions__inner) {
-  border-radius: 20px;
-  padding: 8px 16px;
-  background-color: rgba(0, 0, 0, 0.7);
-}
-
-:deep(.el-image-viewer__btn) {
-  color: #fff;
-  opacity: 0.8;
-  font-size: 24px;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-:deep(.el-image-viewer__btn:hover) {
-  opacity: 1;
-  transform: scale(1.1);
-}
-
-:deep(.el-image-viewer__close) {
-  top: 20px;
-  right: 20px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: rgba(0, 0, 0, 0.7);
-  font-size: 24px;
-  opacity: 0.8;
-  transition: all 0.3s;
-}
-
-:deep(.el-image-viewer__close:hover) {
-  opacity: 1;
-  transform: rotate(90deg);
-  background-color: rgba(0, 0, 0, 0.9);
-}
-
-:deep(.el-image-viewer__canvas) {
+.info-header {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  width: 100%;
-  height: 100%;
 }
 
-:deep(.el-image-viewer__img) {
-  max-width: 100%;
-  max-height: 100%;
-  user-select: none;
-  -webkit-user-drag: none;
-  cursor: grab;
+.timestamp {
+  font-size: 14px;
+  color: var(--el-text-color-secondary);
 }
 
-:deep(.el-image-viewer__img:active) {
-  cursor: grabbing;
+.info-actions {
+  display: flex;
+  gap: 12px;
 }
 
-:deep(.el-image-viewer__prev),
-:deep(.el-image-viewer__next) {
-  display: none;
+.code-block {
+  margin: 12px 0;
+  padding: 16px;
+  background-color: var(--el-bg-color-page);
+  border-radius: 8px;
+  font-family: 'Fira Code', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--el-text-color-regular);
+}
+
+.item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+}
+
+:deep(.el-collapse) {
+  border: none;
+  --el-collapse-header-height: 40px;
+}
+
+:deep(.el-collapse-item__header) {
+  font-size: 14px;
+  color: var(--el-text-color-regular);
+  border: none;
+}
+
+:deep(.el-collapse-item__content) {
+  padding: 0;
+}
+
+:deep(.el-collapse-item__header .el-icon) {
+  margin-right: 8px;
 }
 
 @media (max-width: 768px) {
-  .history-content {
+  .history-item {
     flex-direction: column;
   }
 
-  .code-preview,
-  .image-preview {
+  .item-preview {
     width: 100%;
-  }
-
-  .history-footer {
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .history-info,
-  .history-actions {
-    width: 100%;
-    justify-content: center;
-    flex-wrap: wrap;
   }
 }
 </style> 

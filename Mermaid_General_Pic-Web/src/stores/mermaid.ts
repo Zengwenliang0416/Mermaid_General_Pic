@@ -71,9 +71,9 @@ export const useMermaidStore = defineStore('mermaid', () => {
   const history = ref<ConversionHistory[]>([]);
   const isLoading = ref(false);
   const error = ref<string | null>(null);
-  const supportedFormats = ref<string[]>([]);
-  const supportedThemes = ref<string[]>([]);
-  const supportedBackgrounds = ref<string[]>([]);
+  const supportedFormats = ref<string[]>(['png', 'svg', 'jpg']);
+  const supportedThemes = ref<string[]>(['default', 'dark', 'forest', 'neutral']);
+  const supportedBackgrounds = ref<string[]>(['transparent', 'white']);
   const dpiRange = ref<{ min: number; max: number; default: number }>({
     min: 72,
     max: 600,
@@ -97,6 +97,9 @@ export const useMermaidStore = defineStore('mermaid', () => {
     theme.value = savedTheme;
     background.value = savedBackground;
     history.value = savedHistory;
+
+    // 初始化时获取支持的格式
+    await fetchFormats();
   }
 
   // Watch for changes and save to localStorage
@@ -135,8 +138,9 @@ export const useMermaidStore = defineStore('mermaid', () => {
       supportedBackgrounds.value = response.backgrounds;
       dpiRange.value = response.dpiRange;
     } catch (err) {
-      error.value = 'Failed to fetch supported formats';
-      console.error(err);
+      console.error('Failed to fetch supported formats:', err);
+      // 使用默认值
+      error.value = null;
     }
   }
 

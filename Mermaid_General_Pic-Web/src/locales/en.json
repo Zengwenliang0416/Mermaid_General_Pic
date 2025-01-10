@@ -5,7 +5,10 @@
     "error": "Error",
     "success": "Success",
     "clear": "Clear",
-    "load": "Load"
+    "load": "Load",
+    "confirm": "Confirm",
+    "warning": "Warning",
+    "close": "Close"
   },
   "editor": {
     "title": "Mermaid Editor",
@@ -56,7 +59,8 @@
     "today": "Today at {time}",
     "yesterday": "Yesterday at {time}",
     "load_tooltip": "Load this code into editor",
-    "download_tooltip": "Download this image"
+    "download_tooltip": "Download this image",
+    "show_code": "Show Code"
   },
   "theme": {
     "default": "Default",
@@ -67,5 +71,25 @@
   "background": {
     "transparent": "Transparent",
     "white": "White"
+  },
+  "ai": {
+    "model": "AI Model",
+    "kimi_model_placeholder": "Select Kimi Model",
+    "api_key_placeholder": "Enter API Key",
+    "placeholder": "Describe the diagram you want to create...",
+    "new_conversation": "New Chat",
+    "generate": "Generate",
+    "user": "User",
+    "assistant": "Assistant",
+    "generation_complete": "Generation complete",
+    "generation_success": "Generated successfully",
+    "generation_error": "Failed to generate",
+    "new_conversation_success": "Started a new conversation",
+    "prompt_required": "Please enter your description",
+    "api_key_required": "Please enter API key"
+  },
+  "nav": {
+    "home": "Home",
+    "help": "Help"
   }
 } 

@@ -5,7 +5,14 @@
     "error": "错误",
     "success": "成功",
     "clear": "清除",
-    "load": "加载"
+    "load": "加载",
+    "confirm": "确定",
+    "warning": "警告",
+    "close": "关闭"
+  },
+  "nav": {
+    "home": "首页",
+    "help": "帮助"
   },
   "editor": {
     "title": "Mermaid 编辑器",
@@ -15,7 +22,7 @@
     "theme": "主题",
     "background": "背景",
     "format": "格式",
-    "dpi": "DPI",
+    "dpi": "分辨率",
     "dpi_tooltip": "图像分辨率 (DPI)"
   },
   "ai": {
@@ -32,7 +39,11 @@
     "new_conversation": "新建对话",
     "new_conversation_success": "已创建新对话",
     "user": "用户",
-    "assistant": "助手"
+    "assistant": "助手",
+    "api_key_placeholder": "请输入 API 密钥",
+    "api_key_required": "请先配置 API 密钥",
+    "kimi_model": "Kimi 模型版本",
+    "kimi_model_placeholder": "选择 Kimi 模型版本"
   },
   "download": {
     "title": "下载设置",
@@ -72,7 +83,11 @@
     "today": "今天 {time}",
     "yesterday": "昨天 {time}",
     "load_tooltip": "加载此代码到编辑器",
-    "download_tooltip": "下载此图片"
+    "download_tooltip": "下载此图片",
+    "show_code": "显示代码",
+    "delete": "删除",
+    "delete_confirm": "确定要删除这条记录吗？",
+    "load": "加载"
   },
   "theme": {
     "default": "默认",

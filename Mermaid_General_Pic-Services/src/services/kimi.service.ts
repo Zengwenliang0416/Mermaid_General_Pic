@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { config } from '../config/config';
 import { logWithContext } from '../utils/logger';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -72,9 +71,14 @@ graph TD
     return code;
   }
 
-  static async generateMermaidCode(prompt: string, conversationId?: string): Promise<KimiResponse> {
+  static async generateMermaidCode(
+    prompt: string,
+    conversationId?: string,
+    apiKey?: string,
+    modelVersion?: string
+  ): Promise<KimiResponse> {
     try {
-      if (!config.kimiApiKey) {
+      if (!apiKey) {
         throw new Error('Kimi API key is not configured');
       }
 
@@ -127,7 +131,7 @@ graph TD
         },
         {
           headers: {
-            'Authorization': `Bearer ${config.kimiApiKey}`,
+            'Authorization': `Bearer ${apiKey}`,
             'Content-Type': 'application/json'
           }
         }
