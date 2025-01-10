@@ -5,10 +5,14 @@
     "error": "错误",
     "success": "成功",
     "clear": "清除",
-    "load": "加载"
+    "load": "加载",
+    "confirm": "确定",
+    "warning": "警告",
+    "close": "关闭"
   },
   "nav": {
-    "home": "主页"
+    "home": "首页",
+    "help": "帮助"
   },
   "editor": {
     "title": "Mermaid 编辑器",
@@ -18,7 +22,7 @@
     "theme": "主题",
     "background": "背景",
     "format": "格式",
-    "dpi": "DPI",
+    "dpi": "分辨率",
     "dpi_tooltip": "图像分辨率 (DPI)"
   },
   "ai": {
@@ -79,7 +83,11 @@
     "today": "今天 {time}",
     "yesterday": "昨天 {time}",
     "load_tooltip": "加载此代码到编辑器",
-    "download_tooltip": "下载此图片"
+    "download_tooltip": "下载此图片",
+    "show_code": "显示代码",
+    "delete": "删除",
+    "delete_confirm": "确定要删除这条记录吗？",
+    "load": "加载"
   },
   "theme": {
     "default": "默认",

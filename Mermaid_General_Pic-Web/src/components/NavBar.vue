@@ -6,50 +6,39 @@
           <el-icon class="logo-icon"><Connection /></el-icon>
           <h2 class="logo">{{ t('editor.title') }}</h2>
         </router-link>
-      </div>
-      <div class="nav-right">
-        <el-menu
-          mode="horizontal"
-          :router="true"
-          :default-active="$route.path"
-          class="nav-menu"
-        >
-          <el-menu-item index="/">
-            <el-tooltip
-              content="返回主页"
-              placement="bottom"
-              :show-after="300"
-            >
-              <template #default>
-                <el-icon><HomeFilled /></el-icon>
-                <span class="nav-item-text">{{ t('nav.home') }}</span>
-              </template>
-            </el-tooltip>
-          </el-menu-item>
-          <el-menu-item index="/history">
-            <el-tooltip
-              content="查看历史记录"
-              placement="bottom"
-              :show-after="300"
-            >
-              <template #default>
-                <el-icon><Timer /></el-icon>
-                <span class="nav-item-text">{{ t('history.title') }}</span>
-              </template>
-            </el-tooltip>
-          </el-menu-item>
-        </el-menu>
 
+        <div class="nav-links">
+          <router-link 
+            to="/" 
+            class="nav-link"
+            :class="{ active: $route.path === '/' }"
+          >
+            <el-icon><HomeFilled /></el-icon>
+            <span class="nav-item-text">{{ t('nav.home') }}</span>
+          </router-link>
+
+          <router-link 
+            to="/history" 
+            class="nav-link"
+            :class="{ active: $route.path === '/history' }"
+          >
+            <el-icon><Timer /></el-icon>
+            <span class="nav-item-text">{{ t('history.title') }}</span>
+          </router-link>
+        </div>
+      </div>
+
+      <div class="nav-right">
         <!-- 主题切换按钮 -->
         <el-tooltip
           :content="isDark ? '切换到浅色模式' : '切换到深色模式'"
           placement="bottom"
           :show-after="300"
         >
-          <div class="theme-switch" @click="toggleTheme">
+          <button class="theme-switch" @click="toggleTheme">
             <el-icon v-if="isDark"><Sunny /></el-icon>
             <el-icon v-else><Moon /></el-icon>
-          </div>
+          </button>
         </el-tooltip>
 
         <!-- 帮助按钮 -->
@@ -174,6 +163,7 @@ const showHelp = () => {
 .nav-left {
   display: flex;
   align-items: center;
+  gap: 32px;
 }
 
 .nav-right {
@@ -210,35 +200,36 @@ const showHelp = () => {
   letter-spacing: 0.5px;
 }
 
-.nav-menu {
-  background-color: transparent;
-  border-bottom: none;
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 24px;
 }
 
-:deep(.el-menu--horizontal) {
-  border-bottom: none;
-}
-
-:deep(.el-menu-item) {
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--el-text-color-regular);
   font-size: 16px;
-  height: 60px;
-  line-height: 60px;
-  padding: 0 24px;
   transition: all 0.3s ease;
 }
 
-:deep(.el-menu-item:hover) {
-  background-color: var(--el-color-primary-light-9);
-}
-
-:deep(.el-menu-item.is-active) {
-  font-weight: 600;
+.nav-link:hover {
   color: var(--el-color-primary);
   background-color: var(--el-color-primary-light-9);
 }
 
-:deep(.el-menu-item .el-icon) {
-  margin-right: 6px;
+.nav-link.active {
+  color: var(--el-color-primary);
+  background-color: var(--el-color-primary-light-9);
+  font-weight: 600;
+}
+
+.nav-link .el-icon {
   font-size: 18px;
 }
 
@@ -253,6 +244,8 @@ const showHelp = () => {
   width: 36px;
   height: 36px;
   border-radius: 8px;
+  border: none;
+  background: none;
   cursor: pointer;
   transition: all 0.3s ease;
   color: var(--el-text-color-regular);
@@ -343,12 +336,16 @@ kbd {
     display: none;
   }
 
-  :deep(.el-menu-item) {
-    padding: 0 16px;
+  .nav-link {
+    padding: 8px;
   }
 
   .logo {
     font-size: 18px;
+  }
+
+  .nav-left {
+    gap: 16px;
   }
 }
 </style> 
