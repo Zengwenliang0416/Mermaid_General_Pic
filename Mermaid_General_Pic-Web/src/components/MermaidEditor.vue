@@ -2,7 +2,7 @@
   <div class="editor-preview-container">
     <el-row :gutter="20">
       <!-- 左侧编辑器 -->
-      <el-col :span="12">
+      <el-col :xs="24" :sm="24" :md="12">
         <el-card class="editor-card" shadow="hover">
           <template #header>
             <div class="card-header">
@@ -17,9 +17,9 @@
                   accept=".txt,.mmd"
                   :before-upload="handleUpload"
                 >
-                  <el-button type="primary" size="small">
+                  <el-button type="primary" size="small" class="action-button">
                     <el-icon><Upload /></el-icon>
-                    {{ t('editor.upload') }}
+                    <span class="button-text">{{ t('editor.upload') }}</span>
                   </el-button>
                 </el-upload>
               </div>
@@ -31,7 +31,7 @@
               <el-input
                 v-model="store.code"
                 type="textarea"
-                :rows="25"
+                :rows="20"
                 :placeholder="t('editor.placeholder')"
                 @input="handleCodeChange"
                 resize="none"
@@ -45,9 +45,10 @@
                 :loading="store.isLoading"
                 @click="handleConvert"
                 size="small"
+                class="action-button"
               >
                 <el-icon><Refresh /></el-icon>
-                {{ t('editor.convert') }}
+                <span class="button-text">{{ t('editor.convert') }}</span>
               </el-button>
             </div>
           </div>
@@ -63,7 +64,7 @@
       </el-col>
 
       <!-- 右侧预览 -->
-      <el-col :span="12">
+      <el-col :xs="24" :sm="24" :md="12">
         <el-card class="preview-card" shadow="hover">
           <template #header>
             <div class="card-header">
@@ -72,20 +73,24 @@
                 <span>{{ t('preview.title') }}</span>
               </div>
               <div class="preview-controls">
-                <div v-if="previewUrl">
+                <el-tooltip
+                  v-if="previewUrl"
+                  :content="t('preview.zoom_tooltip')"
+                  placement="bottom"
+                  :show-after="300"
+                >
                   <el-input-number
                     v-model="zoomPercent"
                     :min="10"
                     :max="300"
                     :step="10"
                     size="small"
-                    style="width: 110px"
                     @change="handleZoomChange"
                     controls-position="right"
                   >
                     <template #suffix>%</template>
                   </el-input-number>
-                </div>
+                </el-tooltip>
                 <DownloadDialog
                   v-if="previewUrl"
                   :code="store.code"
@@ -114,19 +119,16 @@
               <template #placeholder>
                 <div class="image-placeholder">
                   <el-icon><Loading /></el-icon>
-                  <span>{{ t('preview.loading') }}</span>
                 </div>
               </template>
               <template #error>
                 <div class="image-error">
                   <el-icon><PictureFilled /></el-icon>
-                  <span>{{ t('preview.error') }}</span>
                 </div>
               </template>
             </el-image>
             <div v-else class="empty-preview">
               <el-icon><Picture /></el-icon>
-              <span>{{ t('preview.empty') }}</span>
             </div>
           </div>
         </el-card>
@@ -248,15 +250,18 @@ defineExpose({
 .editor-card,
 .preview-card {
   height: 100%;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid var(--el-border-color-light);
+  backdrop-filter: blur(8px);
+  background-color: rgba(var(--el-bg-color-rgb), 0.8);
 }
 
 .editor-card:hover,
 .preview-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-color: var(--el-color-primary-light-7);
 }
 
 .card-header {
@@ -265,6 +270,9 @@ defineExpose({
   align-items: center;
   padding: 16px 20px;
   border-bottom: 1px solid var(--el-border-color-light);
+  background-color: rgba(var(--el-bg-color-rgb), 0.6);
+  backdrop-filter: blur(8px);
+  border-radius: 16px 16px 0 0;
 }
 
 .header-title {
@@ -274,27 +282,48 @@ defineExpose({
   font-size: 18px;
   font-weight: 600;
   color: var(--el-text-color-primary);
+  letter-spacing: -0.5px;
 }
 
 .header-title .el-icon {
   font-size: 20px;
   color: var(--el-color-primary);
+  transition: transform 0.3s ease;
+}
+
+.editor-card:hover .header-title .el-icon,
+.preview-card:hover .header-title .el-icon {
+  transform: scale(1.1);
+}
+
+.header-actions,
+.preview-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 .editor-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
   padding: 20px;
+}
+
+.editor-main {
+  position: relative;
 }
 
 :deep(.el-textarea__inner) {
   font-family: 'Fira Code', monospace;
   font-size: 14px;
   line-height: 1.6;
-  padding: 16px;
-  border-radius: 8px;
-  background-color: var(--el-bg-color);
-  border: 1px solid var(--el-border-color-light);
+  padding: 20px;
+  border-radius: 12px;
+  background-color: var(--el-bg-color-page);
   transition: all 0.3s ease;
   resize: none;
+  border: 1px solid var(--el-border-color-light);
 }
 
 :deep(.el-textarea__inner:hover) {
@@ -309,153 +338,190 @@ defineExpose({
 .editor-footer {
   display: flex;
   justify-content: flex-end;
-}
-
-.preview-container {
-  height: 600px;
-  overflow: auto;
-  background-color: var(--el-bg-color);
-  border-radius: 8px;
-  border: 1px solid var(--el-border-color-light);
-  padding: 20px;
-  margin: 20px;
-}
-
-.preview-image {
-  transition: transform 0.3s ease;
-}
-
-:deep(.el-image) {
-  width: auto !important;
-  display: inline-block;
-}
-
-.empty-preview,
-.image-placeholder,
-.image-error {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  color: var(--el-text-color-secondary);
-  font-size: 14px;
-}
-
-.preview-controls {
-  display: flex;
   gap: 16px;
-  align-items: center;
-}
-
-:deep(.el-button-group) {
-  display: flex;
-  align-items: center;
-}
-
-:deep(.el-button-group .el-button) {
-  padding: 8px 12px;
+  padding-top: 20px;
+  border-top: 1px solid var(--el-border-color-light);
 }
 
 .error-alert {
-  margin-top: 16px;
+  margin: 0 20px 20px;
+  border-radius: 12px;
 }
 
-@media (max-width: 768px) {
-  .el-row {
-    flex-direction: column;
-  }
-
-  .el-col {
-    width: 100% !important;
-    margin-bottom: 20px;
-  }
+.preview-container {
+  position: relative;
+  min-height: 400px;
+  max-height: 600px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background-color: var(--el-bg-color-page);
+  border-radius: 12px;
+  overflow: auto;
+  padding: 20px;
+  margin: 20px;
+  border: 1px solid var(--el-border-color-light);
+  transition: all 0.3s ease;
 }
 
-:deep(.el-image-viewer__wrapper) {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 2000;
+.preview-container:hover {
+  border-color: var(--el-border-color-hover);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-:deep(.el-image-viewer__mask) {
-  position: absolute;
+.preview-image {
+  max-width: 100%;
+  height: auto;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+:deep(.el-image) {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+:deep(.el-image__inner) {
+  object-fit: contain;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.image-placeholder,
+.image-error,
+.empty-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   height: 100%;
-  top: 0;
-  left: 0;
-  opacity: 0.7;
-  background: #000;
+  min-height: inherit;
+  color: var(--el-text-color-secondary);
+  background: linear-gradient(135deg, var(--el-bg-color) 0%, var(--el-bg-color-page) 100%);
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-:deep(.el-image-viewer__actions) {
-  opacity: 0.9;
-  padding: 20px;
+.image-placeholder .el-icon,
+.image-error .el-icon,
+.empty-preview .el-icon {
+  font-size: 32px;
+  opacity: 0.4;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--el-text-color-secondary);
 }
 
-:deep(.el-image-viewer__actions__inner) {
-  border-radius: 20px;
-  padding: 8px 16px;
-  background-color: rgba(0, 0, 0, 0.7);
-}
-
-:deep(.el-image-viewer__btn) {
-  color: #fff;
-  opacity: 0.8;
-  font-size: 24px;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-:deep(.el-image-viewer__btn:hover) {
-  opacity: 1;
+.image-placeholder:hover .el-icon,
+.image-error:hover .el-icon,
+.empty-preview:hover .el-icon {
+  opacity: 0.6;
   transform: scale(1.1);
 }
 
-:deep(.el-image-viewer__close) {
-  top: 20px;
-  right: 20px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: rgba(0, 0, 0, 0.7);
-  font-size: 24px;
-  opacity: 0.8;
-  transition: all 0.3s;
+:deep(.el-upload) {
+  width: auto;
 }
 
-:deep(.el-image-viewer__close:hover) {
-  opacity: 1;
-  transform: rotate(90deg);
-  background-color: rgba(0, 0, 0, 0.9);
-}
-
-:deep(.el-image-viewer__canvas) {
-  display: flex;
-  justify-content: center;
+.action-button {
+  display: inline-flex;
   align-items: center;
-  width: 100%;
-  height: 100%;
+  gap: 8px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
 }
 
-:deep(.el-image-viewer__img) {
-  max-width: 100%;
-  max-height: 100%;
-  user-select: none;
-  -webkit-user-drag: none;
-  cursor: grab;
+.action-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(var(--el-color-primary-rgb), 0.2);
 }
 
-:deep(.el-image-viewer__img:active) {
-  cursor: grabbing;
+.action-button .el-icon {
+  font-size: 16px;
+  transition: transform 0.3s ease;
 }
 
-:deep(.el-image-viewer__prev),
-:deep(.el-image-viewer__next) {
-  display: none;
+.action-button:hover .el-icon {
+  transform: scale(1.1);
+}
+
+:deep(.el-input-number) {
+  width: 120px;
+}
+
+:deep(.el-input-number .el-input__wrapper) {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+:deep(.el-input-number:hover .el-input__wrapper) {
+  box-shadow: 0 0 0 1px var(--el-color-primary-light-7);
+}
+
+:deep(.el-input-number__decrease),
+:deep(.el-input-number__increase) {
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  background-color: var(--el-bg-color-page);
+}
+
+:deep(.el-input-number__decrease:hover),
+:deep(.el-input-number__increase:hover) {
+  background-color: var(--el-color-primary-light-9);
+  color: var(--el-color-primary);
+}
+
+@media (max-width: 768px) {
+  .editor-preview-container {
+    margin-top: 16px;
+  }
+
+  :deep(.el-row) {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  :deep(.el-col) {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .editor-card,
+  .preview-card {
+    margin-bottom: 16px;
+  }
+
+  .preview-container {
+    min-height: 300px;
+    padding: 16px;
+    margin: 16px;
+  }
+
+  .header-title {
+    font-size: 16px;
+  }
+
+  .header-title .el-icon {
+    font-size: 18px;
+  }
+
+  :deep(.el-textarea__inner) {
+    font-size: 13px;
+    padding: 16px;
+  }
+
+  .editor-container {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .card-header {
+    padding: 12px 16px;
+  }
 }
 </style> 

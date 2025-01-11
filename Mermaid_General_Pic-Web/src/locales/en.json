@@ -60,7 +60,10 @@
     "yesterday": "Yesterday at {time}",
     "load_tooltip": "Load this code into editor",
     "download_tooltip": "Download this image",
-    "show_code": "Show Code"
+    "show_code": "Show Code",
+    "load": "Load",
+    "delete": "Delete",
+    "delete_confirm": "Are you sure you want to delete this record?"
   },
   "theme": {
     "default": "Default",
@@ -86,10 +89,14 @@
     "generation_error": "Failed to generate",
     "new_conversation_success": "Started a new conversation",
     "prompt_required": "Please enter your description",
-    "api_key_required": "Please enter API key"
+    "api_key_required": "Please enter API key",
+    "empty_chat": "Start a conversation with AI assistant"
   },
   "nav": {
     "home": "Home",
-    "help": "Help"
+    "help": "Help",
+    "language": "Language",
+    "switch_to_en": "Switch to English",
+    "switch_to_zh": "Switch to Chinese"
   }
 } 

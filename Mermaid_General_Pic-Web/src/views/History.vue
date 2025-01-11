@@ -122,6 +122,7 @@ import { useRouter } from 'vue-router';
 import { useMermaidStore } from '../stores/mermaid';
 import { ElMessageBox } from 'element-plus';
 import NavBar from '../components/NavBar.vue';
+import { onMounted } from 'vue';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -187,6 +188,11 @@ const handleClearHistory = async () => {
     // 用户取消清空
   }
 };
+
+// 在组件挂载时确保历史记录已加载
+onMounted(async () => {
+  await store.initializeStore();
+});
 </script>
 
 <style scoped>

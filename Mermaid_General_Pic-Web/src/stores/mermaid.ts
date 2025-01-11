@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, watch } from 'vue';
 import { api } from '../services/api';
 
+// 转换历史记录接口
 export interface ConversionHistory {
   code: string;
   format: string;
@@ -12,20 +13,30 @@ export interface ConversionHistory {
   url?: string;
 }
 
-// Load initial state from localStorage
-const loadState = async () => {
-  try {
-    const savedCode = localStorage.getItem('mermaid_code') || '';
-    const savedFormat = localStorage.getItem('mermaid_format') || 'png';
-    const savedDpi = Number(localStorage.getItem('mermaid_dpi')) || 300;
-    const savedTheme = localStorage.getItem('mermaid_theme') || 'default';
-    const savedBackground = localStorage.getItem('mermaid_background') || 'white';
-    const savedHistory = JSON.parse(localStorage.getItem('mermaid_history') || '[]');
+// DPI 范围配置
+const DEFAULT_DPI_RANGE = {
+  min: 72,
+  max: 600,
+  default: 300
+};
 
-    // 重新生成历史记录中的图片 URL
-    const processedHistory = await Promise.all(
-      savedHistory.map(async (item: ConversionHistory) => {
+// 从 localStorage 加载状态
+async function loadState() {
+  const savedCode = localStorage.getItem('mermaid_code') || '';
+  const savedFormat = localStorage.getItem('mermaid_format') || 'png';
+  const savedDpi = Number(localStorage.getItem('mermaid_dpi')) || DEFAULT_DPI_RANGE.default;
+  const savedTheme = localStorage.getItem('mermaid_theme') || 'default';
+  const savedBackground = localStorage.getItem('mermaid_background') || 'white';
+  let savedHistory: ConversionHistory[] = [];
+
+  try {
+    const historyStr = localStorage.getItem('mermaid_history');
+    if (historyStr) {
+      const parsedHistory = JSON.parse(historyStr);
+      // 为每个历史记录重新创建 URL
+      savedHistory = await Promise.all(parsedHistory.map(async (item: ConversionHistory) => {
         try {
+          // 使用存储的参数重新生成图片
           const blob = await api.convert(
             item.code,
             item.format,
@@ -33,34 +44,29 @@ const loadState = async () => {
             item.theme,
             item.background
           );
-          item.url = URL.createObjectURL(blob);
+          return {
+            ...item,
+            url: URL.createObjectURL(blob)
+          };
         } catch (error) {
-          console.error('Failed to regenerate image URL for history item:', error);
+          console.error('Failed to recreate URL for history item:', error);
+          return item;
         }
-        return item;
-      })
-    );
-    
-    return {
-      savedCode,
-      savedFormat,
-      savedDpi,
-      savedTheme,
-      savedBackground,
-      savedHistory: processedHistory
-    };
+      }));
+    }
   } catch (error) {
-    console.error('Failed to load state from localStorage:', error);
-    return {
-      savedCode: '',
-      savedFormat: 'png',
-      savedDpi: 300,
-      savedTheme: 'default',
-      savedBackground: 'white',
-      savedHistory: []
-    };
+    console.error('Failed to load history:', error);
   }
-};
+
+  return {
+    savedCode,
+    savedFormat,
+    savedDpi,
+    savedTheme,
+    savedBackground,
+    savedHistory
+  };
+}
 
 export const useMermaidStore = defineStore('mermaid', () => {
   const code = ref('');
@@ -74,11 +80,7 @@ export const useMermaidStore = defineStore('mermaid', () => {
   const supportedFormats = ref<string[]>(['png', 'svg', 'jpg']);
   const supportedThemes = ref<string[]>(['default', 'dark', 'forest', 'neutral']);
   const supportedBackgrounds = ref<string[]>(['transparent', 'white']);
-  const dpiRange = ref<{ min: number; max: number; default: number }>({
-    min: 72,
-    max: 600,
-    default: 300
-  });
+  const dpiRange = ref<{ min: number; max: number; default: number }>(DEFAULT_DPI_RANGE);
 
   // 初始化 store
   async function initializeStore() {
@@ -101,6 +103,9 @@ export const useMermaidStore = defineStore('mermaid', () => {
     // 初始化时获取支持的格式
     await fetchFormats();
   }
+
+  // 立即初始化 store
+  initializeStore();
 
   // Watch for changes and save to localStorage
   watch(code, (newCode) => {
