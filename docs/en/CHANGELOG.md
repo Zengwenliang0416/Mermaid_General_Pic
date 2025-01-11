@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✨ Added support for multiple AI model selection
 - ✨ Added conversion history feature
 - 🌐 Added internationalization support
+- 📝 Enhanced project documentation structure (English and Chinese docs)
 
 ### Optimized
 - 🎨 Enhanced AI chat interface
@@ -35,6 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 🎨 Added download panel internationalization
 - ✨ Enhanced download options (type, filename, format, API, style, background)
 - 🔍 Added image preview functionality
+- 📝 Added API documentation
+- 📝 Added LICENSE file
 
 ### Optimized
 - ⚡️ Improved conversion speed
@@ -43,6 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 🔍 Removed redundant zoom button, added manual zoom ratio editing
 - 📝 Adjusted console log format
 - 🎨 Added code comments
+- ♻️ Restructured project (renamed frontend and backend directories)
+- 🔧 Optimized Docker deployment configuration
 
 ### Fixed
 - 🐛 Fixed preview image loading in conversion history
@@ -56,4 +61,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 🎉 Project initialization
 - ✨ Implemented frontend-backend separated code-to-image conversion
 - 🐳 Added Docker deployment support
-- 📝 Basic documentation support 
+- 📝 Basic documentation support
+- 🔧 Added basic configuration files 
