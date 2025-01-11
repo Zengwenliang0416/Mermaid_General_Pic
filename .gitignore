@@ -53,6 +53,9 @@ static/images/*
 .temp
 .cache
 .history
+.vite
+test*.png
+output*.png
 
 # Vue.js
 .vue-sfc-temp
@@ -68,5 +71,24 @@ desktop.ini
 # Project specific
 public/generated/*
 !public/generated/.gitkeep 
+**/test/*.png
+**/test/*.jpg
+**/test/*.svg
+
+# IDE and Editor files
+**/.idea/
+**/.vscode/
+**/.vs/
+**/*.swp
+**/*.swo
+**/*~
+
+# Build and Dependency directories
+**/dist/
+**/node_modules/
+**/.vite/
+**/.nuxt/
+**/.output/
+**/.build/
 
 .cursorrules
