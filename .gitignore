@@ -1,7 +1,72 @@
+# Dependencies
 node_modules
+.pnpm-store/
+
+# Build outputs
 dist
+dist-ssr
+build
+*.local
+
+# Logs
 logs
-static/images/*
-.env
 *.log
-.DS_Store 
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+
+# Testing
+coverage
+.nyc_output
+cypress/videos/
+cypress/screenshots/
+
+# Generated files
+static/images/*
+!static/images/.gitkeep
+*.tsbuildinfo
+.eslintcache
+.stylelintcache
+
+# Temporary files
+*.tmp
+*.temp
+.temp
+.cache
+.history
+
+# Vue.js
+.vue-sfc-temp
+
+# TypeScript
+*.tsbuildinfo
+
+# System files
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Project specific
+public/generated/*
+!public/generated/.gitkeep 
+
+.cursorrules
