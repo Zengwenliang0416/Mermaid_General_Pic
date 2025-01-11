@@ -1,18 +1,34 @@
 # Mermaid 图表生成器 - 前端
 
+[English](./README_EN.md) | 简体中文
+
 Vue 3 + TypeScript 实现的 Mermaid 图表生成器前端界面。
 
-## 技术栈
+## 📚 目录
 
-- Vue 3
-- TypeScript
-- Element Plus
-- Pinia
-- Vue Router
-- Vue I18n
-- Vite
+- [技术栈](#技术栈)
+- [开发环境](#开发环境)
+- [项目结构](#项目结构)
+- [组件说明](#组件说明)
+- [状态管理](#状态管理)
+- [API 服务](#api-服务)
+- [国际化](#国际化)
+- [测试指南](#测试指南)
+- [开发指南](#开发指南)
+- [部署指南](#部署指南)
+- [常见问题](#常见问题)
 
-## 开发环境
+## 🛠️ 技术栈
+
+- Vue 3 - 渲染框架
+- TypeScript - 类型系统
+- Element Plus - UI 组件库
+- Pinia - 状态管理
+- Vue Router - 路由管理
+- Vue I18n - 国际化
+- Vite - 构建工具
+
+## 🚀 开发环境
 
 ```bash
 # 安装依赖
@@ -28,188 +44,250 @@ pnpm build
 pnpm test
 ```
 
-## 项目结构
+## 📁 项目结构
 
 ```
 src/
-├── components/          # 可复用组件
-├── views/              # 页面组件
-│   ├── Home.vue       # 主编辑页面
-│   └── History.vue    # 历史记录页面
-├── stores/             # Pinia 状态管理
-│   └── mermaid.ts     # Mermaid 相关状态
-├── services/           # API 服务
-│   └── api.ts         # API 调用封装
-├── i18n/               # 国际化
-│   ├── index.ts       # i18n 配置
-│   └── messages.ts    # 翻译文件
-├── router/             # 路由配置
-│   └── index.ts       # 路由定义
-├── App.vue            # 根组件
-└── main.ts            # 入口文件
-
-## 测试
-
-### 单元测试
-
-```bash
-# 运行单元测试
-pnpm test:unit
+├── assets/              # 静态资源
+│   ├── styles/         # 样式文件
+│   └── images/         # 图片资源
+├── components/         # 可复用组件
+│   ├── Editor/        # 编辑器相关组件
+│   ├── History/       # 历史记录相关组件
+│   └── common/        # 公共组件
+├── views/             # 页面组件
+│   ├── Home.vue      # 主编辑页面
+│   └── History.vue   # 历史记录页面
+├── stores/            # Pinia 状态管理
+│   └── mermaid.ts    # Mermaid 相关状态
+├── services/          # API 服务
+│   ├── api.ts        # API 调用封装
+│   └── types.ts      # 类型定义
+├── i18n/              # 国际化
+│   ├── index.ts      # i18n 配置
+│   └── messages.ts   # 翻译文件
+├── utils/            # 工具函数
+│   ├── mermaid.ts   # Mermaid 相关工具
+│   └── ai.ts        # AI 相关工具
+├── router/           # 路由配置
+│   └── index.ts     # 路由定义
+├── App.vue          # 根组件
+└── main.ts         # 入口文件
 ```
 
-测试文件位于 `tests/unit/` 目录，使用 Vitest 进行测试。
+## 🧩 组件说明
 
-测试覆盖：
-- 组件渲染测试
-- Store 状态管理测试
-- API 服务测试
-- 工具函数测试
+### 📝 Editor 组件
+`Editor.vue` - Mermaid 代码编辑器
+- Monaco 编辑器集成
+- 语法高亮
+- 自动完成
+- 错误提示
+- 快捷键支持
 
-### E2E 测试
-
-```bash
-# 运行 E2E 测试
-pnpm test:e2e
-```
-
-测试文件位于 `tests/e2e/` 目录，使用 Cypress 进行测试。
-
-测试场景：
-1. 基本功能测试
-   - Mermaid 代码编辑和预览
-   - 格式切换
-   - DPI 调整
-   - 主题切换
-   - 背景切换
-
-2. 文件操作测试
-   - 文件上传
-   - 图片下载
-   - 历史记录管理
-
-3. 界面交互测试
-   - 响应式布局
-   - 语言切换
-   - 错误提示
-   - 加载状态
-
-4. 边界条件测试
-   - 空输入处理
-   - 错误代码处理
-   - 网络错误处理
-
-## 组件说明
-
-### Home.vue
-
-主编辑页面，包含：
-- Mermaid 代码编辑器
-- 实时预览
-- 格式选择
-- DPI 设置
-- 主题选择
-- 背景选择
-- 文件上传
-- 图片下载
-
-### History.vue
-
-历史记录页面，包含：
-- 转换历史列表
-- 历史记录预览
-- 重新加载历史记录
-- 下载历史图片
-- 清空历史记录
-
-## 状态管理
-
-使用 Pinia 管理状态，主要包含：
-- Mermaid 代码
-- 输出格式
-- DPI 设置
-- 主题设置
+### 👁️ Preview 组件
+`Preview.vue` - 图表预览组件
+- 实时渲染
+- 缩放控制
+- 导出选项
+- 主题切换
 - 背景设置
-- 转换历史
-- 加载状态
-- 错误信息
 
-## API 服务
+### 📋 History 组件
+`History.vue` - 历史记录组件
+- 列表展示
+- 预览功能
+- 代码恢复
+- 批量操作
+- 搜索过滤
 
-### api.ts
-
-封装了与后端的通信：
-- 获取支持的格式
-- 转换 Mermaid 代码
-- 上传文件
+### 🤖 AI 相关组件
+`AIPrompt.vue` - AI 输入组件
+- 模型选择
+- 提示输入
+- 上下文管理
+- 历史对话
 - 错误处理
 
-## 国际化
+## 📦 状态管理
 
-支持中英文切换，翻译文件位于 `src/i18n/messages.ts`。
+使用 Pinia 管理状态：
+
+### Mermaid Store
+```typescript
+interface MermaidState {
+  code: string;
+  format: 'png' | 'svg' | 'jpg';
+  dpi: number;
+  theme: string;
+  background: string;
+  history: HistoryItem[];
+  loading: boolean;
+  error: Error | null;
+}
+```
+
+### AI Store
+```typescript
+interface AIState {
+  model: string;
+  version: string;
+  conversationId: string | null;
+  history: ChatMessage[];
+  loading: boolean;
+}
+```
+
+## 🔌 API 服务
+
+### api.ts
+```typescript
+export const api = {
+  // Mermaid 相关
+  getFormats: () => Promise<FormatResponse>,
+  convertCode: (params: ConvertParams) => Promise<ConvertResponse>,
+  uploadFile: (file: File, params: UploadParams) => Promise<UploadResponse>,
+  
+  // AI 相关
+  getModels: () => Promise<ModelResponse>,
+  generateCode: (params: GenerateParams) => Promise<GenerateResponse>,
+}
+```
+
+## 🌍 国际化
 
 ### 添加新语言
+1. 在 `messages.ts` 添加翻译：
+```typescript
+export const messages = {
+  zh: {
+    editor: { ... },
+    preview: { ... },
+    history: { ... }
+  },
+  en: {
+    editor: { ... },
+    preview: { ... },
+    history: { ... }
+  }
+}
+```
 
-1. 在 messages.ts 中添加新语言对象
-2. 在语言切换组件中添加新选项
-3. 更新语言检测逻辑
+2. 在语言选择器添加选项：
+```typescript
+const languages = [
+  { value: 'zh', label: '简体中文' },
+  { value: 'en', label: 'English' }
+]
+```
 
-## 样式主题
+## 🧪 测试指南
 
-使用 Element Plus 的主题系统，可以通过以下方式自定义：
+### 单元测试
+```bash
+# 运行所有测试
+pnpm test:unit
 
-1. 覆盖 Element Plus 变量
-2. 添加自定义 CSS
-3. 使用主题编辑器
+# 运行特定测试文件
+pnpm test:unit src/components/Editor.spec.ts
 
-## 开发指南
+# 监视模式
+pnpm test:unit:watch
 
-### 新增功能
+# 生成覆盖率报告
+pnpm test:unit:coverage
+```
 
-1. 创建功能分支
-2. 添加必要的组件/服务
-3. 更新状态管理
-4. 添加测试用例
-5. 更新文档
-6. 提交 PR
+### E2E 测试
+```bash
+# 打开 Cypress 测试界面
+pnpm test:e2e
+
+# 运行所有 E2E 测试
+pnpm test:e2e:ci
+```
+
+### 测试示例
+
+#### 组件测试
+```typescript
+import { mount } from '@vue/test-utils'
+import Editor from '@/components/Editor.vue'
+
+describe('Editor.vue', () => {
+  it('renders editor with initial value', () => {
+    const wrapper = mount(Editor, {
+      props: {
+        modelValue: 'graph TD;A-->B;'
+      }
+    })
+    expect(wrapper.find('.monaco-editor').exists()).toBe(true)
+  })
+})
+```
+
+#### E2E 测试
+```typescript
+describe('Mermaid Editor', () => {
+  beforeEach(() => {
+    cy.visit('/')
+  })
+
+  it('should render editor and preview', () => {
+    cy.get('.editor-container').should('be.visible')
+    cy.get('.preview-container').should('be.visible')
+  })
+})
+```
+
+## 📖 开发指南
 
 ### 代码规范
+- ESLint 配置
+- Prettier 格式化
+- TypeScript 严格模式
+- Vue 3 组合式 API 风格
 
-- 使用 ESLint 进行代码检查
-- 使用 Prettier 进行代码格式化
-- 遵循 Vue 3 组合式 API 风格
-- 使用 TypeScript 类型注解
+### Git 工作流
+- 主分支：`main`
+- 开发分支：`develop`
+- 功能分支：`feature/*`
+- 修复分支：`bugfix/*`
+- 发布分支：`release/*`
 
 ### 提交规范
+```bash
+<type>(<scope>): <subject>
 
-使用语义化提交信息：
+<body>
+
+<footer>
+```
+
+类型（type）:
 - feat: 新功能
 - fix: 修复
-- docs: 文档更新
-- style: 代码格式
+- docs: 文档
+- style: 格式
 - refactor: 重构
 - test: 测试
-- chore: 构建/工具
+- chore: 构建
 
-## 部署
+## 📦 部署指南
 
 ### 构建
-
 ```bash
 # 构建生产版本
 pnpm build
 ```
 
-构建产物位于 `dist/` 目录。
-
 ### 环境变量
-
-在 `.env` 文件中配置：
 ```env
 VITE_API_BASE_URL=http://localhost:8000
+VITE_AI_API_KEY=your-api-key
 ```
 
 ### Docker 部署
-
 ```bash
 # 构建镜像
 docker build -t mermaid-frontend .
@@ -218,31 +296,45 @@ docker build -t mermaid-frontend .
 docker run -d -p 80:80 mermaid-frontend
 ```
 
-## 常见问题
+### 部署检查清单
+- [ ] 环境变量配置
+- [ ] 依赖安装完整
+- [ ] 构建成功
+- [ ] API 配置正确
+- [ ] 静态资源优化
+- [ ] 安全配置
+- [ ] 性能测试
+- [ ] 日志配置
 
-1. **开发服务器启动失败**
-   - 检查端口占用
-   - 确认依赖安装完整
-   - 检查环境变量配置
+## ❓ 常见问题
 
-2. **构建错误**
+### 开发问题
+1. **编辑器加载失败**
+   - 检查 Monaco 编辑器配置
+   - 验证 WebWorker 设置
+   - 确认资源加载完成
+
+2. **预览不更新**
+   - 检查 Mermaid 配置
+   - 验证代码语法
+   - 确认主题设置
+
+3. **AI 生成失败**
+   - 验证 API 密钥
+   - 检查网络请求
+   - 确认模型参数
+
+### 部署问题
+1. **构建失败**
    - 清理依赖缓存
    - 更新依赖版本
    - 检查 TypeScript 错误
 
-3. **测试失败**
-   - 检查测试环境配置
-   - 更新快照
-   - 检查异步测试超时
+2. **性能问题**
+   - 检查代码分割
+   - 优化资源加载
+   - 启用缓存策略
 
-## 贡献指南
+## 📄 许可证
 
-1. Fork 项目
-2. 创建功能分支
-3. 提交更改
-4. 推送到分支
-5. 创建 Pull Request
-
-## 许可证
-
-ISC License
+MIT License - 详见 [LICENSE](./LICENSE) 文件
