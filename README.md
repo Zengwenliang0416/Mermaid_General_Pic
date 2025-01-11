@@ -6,17 +6,16 @@ Mermaid 图表生成器是一个强大的 Web 应用，旨在简化图表创建�
 
 ![logo](./imgs/logo.png)
 
-## 📚 目录
+## 📚 文档
 
-- [功能特点](#功能特点)
-- [快速开始](#快速开始)
-- [项目结构](#项目结构)
-- [开发指南](#开发指南)
-- [API 文档](#api-文档)
-- [测试指南](#测试指南)
-- [部署指南](#部署指南)
-- [常见问题](#常见问题)
-- [贡献指南](#贡献指南)
+详细文档请访问我们的[文档中心](./docs/zh/README.md)：
+
+- [快速开始](./docs/zh/guides/getting-started.md)
+- [功能概览](./docs/zh/guides/features.md)
+- [API 文档](./docs/zh/api/backend.md)
+- [开发指南](./docs/zh/development/architecture.md)
+- [部署指南](./docs/zh/deployment/installation.md)
+- [故障排除](./docs/zh/guides/troubleshooting.md)
 
 ## ✨ 功能特点
 
@@ -92,123 +91,9 @@ Mermaid 图表生成器是一个强大的 Web 应用，旨在简化图表创建�
    pnpm dev
    ```
 
-## 📁 项目结构
+更多详细信息请参阅[完整文档](./docs/zh/README.md)。
 
-```
-mermaid-general-pic/
-├── Mermaid_General_Pic-Web/     # 前端项目
-│   ├── src/                    # 源代码
-│   ├── tests/                  # 测试文件
-│   └── README.md              # 前端文档
-├── Mermaid_General_Pic-Services/ # 后端项目
-│   ├── src/                    # 源代码
-│   ├── tests/                  # 测试文件
-│   └── README.md              # 后端文档
-└── README.md                   # 项目总文档
-```
-
-详细的项目结构请参考：
-- [前端项目结构](./Mermaid_General_Pic-Web/README.md#项目结构)
-- [后端项目结构](./Mermaid_General_Pic-Services/README.md#项目结构)
-
-## 📖 开发指南
-
-### 技术栈
-- 前端：Vue 3 + TypeScript + Element Plus
-- 后端：Node.js + Express + TypeScript
-- AI 集成：Kimi API、DeepSeek API
-- 图表生成：Mermaid CLI
-
-### 开发流程
-1. 创建功能分支
-2. 开发新功能
-3. 编写测试
-4. 提交代码
-5. 代码审查
-6. 合并到开发分支
-
-详细的开发指南请参考：
-- [前端开发指南](./Mermaid_General_Pic-Web/README.md#开发指南)
-- [后端开发指南](./Mermaid_General_Pic-Services/README.md#开发指南)
-
-## 📚 API 文档
-
-### 基础 API
-- 获取支持的格式
-- 转换 Mermaid 代码
-- 上传文件转换
-
-### AI API
-- 获取可用的 AI 模型
-- AI 生成 Mermaid 代码
-
-详细的 API 文档请参考：
-- [API 文档](./Mermaid_General_Pic-Services/README.md#api-文档)
-
-## 🧪 测试指南
-
-### 前端测试
-- 单元测试 (Vitest)
-- 组件测试
-- E2E 测试 (Cypress)
-- 性能测试 (Lighthouse)
-
-### 后端测试
-- 单元测试 (Jest)
-- 集成测试
-- 性能测试
-- API 测试
-
-详细的测试指南请参考：
-- [前端测试指南](./Mermaid_General_Pic-Web/README.md#测试指南)
-- [后端测试指南](./Mermaid_General_Pic-Services/README.md#测试指南)
-
-## 📦 部署指南
-
-### 构建项目
-```bash
-# 构建前端
-cd Mermaid_General_Pic-Web
-pnpm build
-
-# 构建后端
-cd ../Mermaid_General_Pic-Services
-pnpm build
-```
-
-### 部署检查清单
-- [ ] 环境变量配置
-- [ ] 依赖安装完整
-- [ ] 构建成功
-- [ ] API 配置正确
-- [ ] 静态资源优化
-- [ ] 安全配置
-- [ ] 性能测试
-- [ ] 日志配置
-
-详细的部署指南请参考：
-- [前端部署指南](./Mermaid_General_Pic-Web/README.md#部署)
-- [后端部署指南](./Mermaid_General_Pic-Services/README.md#部署)
-
-## ❓ 常见问题
-
-### 开发相关
-1. 开发环境配置问题
-2. 依赖安装失败
-3. 编译错误
-4. API 调用失败
-
-### 部署相关
-1. 构建失败
-2. 环境变量配置
-3. 静态资源访问
-4. 性能优化
-
-详细的常见问题解答请参考：
-- [前端常见问题](./Mermaid_General_Pic-Web/README.md#常见问题)
-- [后端常见问题](./Mermaid_General_Pic-Services/README.md#常见问题)
-
-## 🤝 贡献指南
+## 🤝 贡献
 
 我们欢迎所有形式的贡献，包括但不限于：
 - 提交问题和建议
@@ -216,16 +101,8 @@ pnpm build
 - 修复 bug
 - 添加新功能
 
-### 贡献步骤
-1. Fork 项目
-2. 创建功能分支
-3. 提交更改
-4. 推送到分支
-5. 创建 Pull Request
-
-详细的贡献指南请参考：
-- [贡献指南](./CONTRIBUTING.md)
+详细信息请参阅[贡献指南](./docs/zh/development/contributing.md)。
 
 ## 📄 许可证
 
-本项目采用 MIT 许可证 - 详见 [LICENSE](./LICENSE) 文件 
+本项目采用 MIT 许可证 - 详见 [LICENSE](./LICENSE) 文件。 
